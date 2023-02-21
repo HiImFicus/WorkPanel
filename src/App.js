@@ -3,6 +3,7 @@ import { useDisclosure } from '@mantine/hooks'
 
 import HeaderSearch from './components/struct/HeaderSearch'
 import NavbarColored from './components/struct/NavbarColored'
+import { Outlet } from "react-router-dom";
 
 import './App.css'
 
@@ -14,20 +15,25 @@ const useStyles = createStyles(theme => ({
 
 //fake data def
 const headerLinks = [
-  { link: '', label: 'headerLink1' }
+  // { link: '', label: 'headerLink1' }
 ];
 
 const navbarLinks = [
-  { link: '', label: 'Notifications' },
-  { link: '', label: 'Billing' },
-  { link: '', label: 'Security' },
-  { link: '', label: 'SSH Keys' },
-  { link: '', label: 'Databases' },
-  { link: '', label: 'Authentication' },
+  { link: '', label: 'Home', chidren: [] },
+  {
+    link: 'gpu', label: 'GPU', chidren: [
+      { link: 'gpu-seting', label: 'Seting' }
+    ]
+  },
+  // { link: '', label: 'Billing' },
+  // { link: '', label: 'Security' },
+  // { link: '', label: 'SSH Keys' },
+  // { link: '', label: 'Databases' },
+  // { link: '', label: 'Authentication' },
 ];
 
 const navbarBottomLinks = [
-  { link: '', label: 'Settings' },
+  // { link: '', label: 'Settings' },
 ];
 
 const searchConent = [
@@ -52,6 +58,7 @@ function App() {
         {navIsShowing && (<NavbarColored data={navbarLinks} bottomData={navbarBottomLinks} version={version} />)}
         <Flex direction="column" className={classes.content}>
           <HeaderSearch links={headerLinks} searchConent={searchConent} navbarState={navIsShowing} navbarToggle={() => { navToggle.toggle() }} />
+          <Outlet />
         </Flex>
       </Flex>
     </Container>

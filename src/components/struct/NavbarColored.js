@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { createStyles, Navbar, Group, Code, Text } from '@mantine/core'
+import { Link } from "react-router-dom";
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon')
   return {
     navbar: {
-      backgroundColor: theme.fn.variant({
-        variant: 'filled',
-        color: theme.primaryColor
-      }).background
+      // backgroundColor: theme.fn.variant({
+      //   variant: 'filled',
+      //   color: theme.primaryColor
+      // }).background,
+      backgroundImage: `linear-gradient(-60deg, ${theme.colors[theme.primaryColor][4]} 0%, ${theme.colors[theme.primaryColor][7]
+        } 100%)`,
     },
 
     text: {
@@ -87,46 +90,48 @@ const useStyles = createStyles((theme, _params, getRef) => {
   }
 })
 
+
+
 export function NavbarColored({ data, bottomData, version }) {
   const { classes, cx } = useStyles()
   // const [active, setActive] = useState('Billing')
-  const [active, setActive] = useState('')
+  const [active, setActive] = useState(data[0].label)
 
   const links = data.map(item => (
-    <a
+    <Link
+      //todo refresh bug
       className={cx(classes.link, {
         [classes.linkActive]: item.label === active
       })}
-      href={item.link}
+      to={item.link}
       key={item.label}
-      onClick={event => {
-        event.preventDefault()
+      onClick={() => {
         setActive(item.label)
       }}
     >
       <span>{item.label}</span>
-    </a>
+    </Link>
   ))
 
   const bottomLinks = bottomData.map(item => (
-    <a
-      href={item.link}
+    <Link
+      to={item.link}
       key={item.label}
       className={classes.link}
-      onClick={event => event.preventDefault()}
     >
       <span>{item.label}</span>
-    </a>
+    </Link>
   ))
 
   return (
-    <Navbar height='100vh' width={{ sm: 300 }} p='md' className={classes.navbar}>
+    <Navbar mih="100vh" width={{ sm: 300 }} p='md' className={classes.navbar}>
       <Navbar.Section grow>
         <Group className={classes.header} position='apart'>
           <Text className={classes.text}>My Work Panel</Text>
           <Code className={classes.version}>{version}</Code>
         </Group>
         {links}
+
       </Navbar.Section>
 
       <Navbar.Section className={classes.footer}>

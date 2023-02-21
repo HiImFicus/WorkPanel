@@ -4,13 +4,38 @@ import { MantineProvider } from '@mantine/core';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import ErrorPage from "./components/ErrorPage";
+import GPU from './components/workPanel/GPU';
+import Welcome from './components/Welcome';
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "/",
+        element: <Welcome />
+      },
+      {
+        path: "gpu",
+        element: <GPU />,
+      },
+    ],
+  },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-      <MantineProvider theme={{ colorScheme: 'dark' }} withGlobalStyles withNormalizeCSS>
-        <App />
-      </MantineProvider>
+    <MantineProvider theme={{ colorScheme: 'dark' }} withGlobalStyles withNormalizeCSS>
+      <RouterProvider router={router} />
+    </MantineProvider>
   </React.StrictMode>
 );
 

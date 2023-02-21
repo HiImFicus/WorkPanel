@@ -73,7 +73,7 @@ export function HeaderSearch({ links, searchConent, navbarState, navbarToggle })
   ))
 
   return (
-    <Header height={56} className={classes.header} mb={120}>
+    <Header height={56} className={classes.header} mb={10}>
       <div className={classes.inner}>
         <Group>
           <Burger opened={navbarState} onClick={navbarToggle} size='sm' />
