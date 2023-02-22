@@ -19,12 +19,8 @@ const headerLinks = [
 ];
 
 const navbarLinks = [
-  { link: '', label: 'Home', chidren: [] },
-  {
-    link: 'gpu', label: 'GPU', chidren: [
-      { link: 'gpu-seting', label: 'Seting' }
-    ]
-  },
+  { link: '', label: 'Home' },
+  { link: 'gpu', label: 'GPU' },
   // { link: '', label: 'Billing' },
   // { link: '', label: 'Security' },
   // { link: '', label: 'SSH Keys' },

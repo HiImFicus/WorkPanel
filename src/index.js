@@ -9,7 +9,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import ErrorPage from "./components/ErrorPage";
-import GPU from './components/workPanel/GPU';
+import GPUMain from './components/features/GPU/Main';
 import Welcome from './components/Welcome';
 
 const router = createBrowserRouter([
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
       },
       {
         path: "gpu",
-        element: <GPU />,
+        element: <GPUMain />,
       },
     ],
   },

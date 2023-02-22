@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { createStyles, Navbar, Group, Code, Text } from '@mantine/core'
 import { Link } from "react-router-dom";
+import { useViewportSize } from '@mantine/hooks';
+
 
 const useStyles = createStyles((theme, _params, getRef) => {
   const icon = getRef('icon')
@@ -90,10 +92,10 @@ const useStyles = createStyles((theme, _params, getRef) => {
   }
 })
 
-
-
 export function NavbarColored({ data, bottomData, version }) {
   const { classes, cx } = useStyles()
+  const { height } = useViewportSize();
+
   // const [active, setActive] = useState('Billing')
   const [active, setActive] = useState(data[0].label)
 
@@ -124,7 +126,7 @@ export function NavbarColored({ data, bottomData, version }) {
   ))
 
   return (
-    <Navbar mih="100vh" width={{ sm: 300 }} p='md' className={classes.navbar}>
+    <Navbar mih={height} width={{ sm: 300 }} p='md' className={classes.navbar}>
       <Navbar.Section grow>
         <Group className={classes.header} position='apart'>
           <Text className={classes.text}>My Work Panel</Text>
