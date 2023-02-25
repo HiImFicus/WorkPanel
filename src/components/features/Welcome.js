@@ -37,9 +37,9 @@ export function Welcome() {
     return (
         <div className={classes.wrapper}>
             <div>
-                <Title className={classes.title}>Welcome, have a good one.</Title>
+                <Title className={classes.title}>Hello, Ficus!</Title>
                 <Text className={classes.description} mt="sm">
-                    Todo.
+                    Welcome to work panel.
                 </Text>
             </div>
             <div className=""></div>

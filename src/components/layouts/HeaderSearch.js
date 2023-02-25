@@ -77,7 +77,6 @@ export function HeaderSearch({ links, searchConent, navbarState, navbarToggle })
       <div className={classes.inner}>
         <Group>
           <Burger opened={navbarState} onClick={navbarToggle} size='sm' />
-          <Text>Hello, Ficus!</Text>
         </Group>
 
         <Group>

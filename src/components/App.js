@@ -1,11 +1,14 @@
 import { Container, Flex, createStyles } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 
-import HeaderSearch from './components/struct/HeaderSearch'
-import NavbarColored from './components/struct/NavbarColored'
+import HeaderSearch from './layouts/HeaderSearch'
+import NavbarColored from './layouts/NavbarColored'
 import { Outlet } from "react-router-dom";
 
-import './App.css'
+import {
+  IconHeartRateMonitor,
+  IconGauge,
+} from '@tabler/icons-react';
 
 const useStyles = createStyles(theme => ({
   content: {
@@ -19,17 +22,22 @@ const headerLinks = [
 ];
 
 const navbarLinks = [
-  { link: '', label: 'Home' },
-  { link: 'gpu', label: 'GPU' },
-  // { link: '', label: 'Billing' },
-  // { link: '', label: 'Security' },
-  // { link: '', label: 'SSH Keys' },
-  // { link: '', label: 'Databases' },
-  // { link: '', label: 'Authentication' },
-];
-
-const navbarBottomLinks = [
-  // { link: '', label: 'Settings' },
+  {
+    label: 'Home', icon: IconGauge,
+    initiallyOpened: true,
+    links: [
+      { label: 'Dashboard', link: '/' },
+    ]
+  },
+  {
+    label: 'GPU management',
+    icon: IconHeartRateMonitor,
+    links: [
+      { label: 'Overview', link: '/gpu' },
+      { label: 'Operate', link: '/gpu/add' },
+      { label: 'Setting', link: '/gpu/setting' },
+    ],
+  },
 ];
 
 const searchConent = [
@@ -49,9 +57,9 @@ function App() {
   const { classes } = useStyles()
 
   return (
-    <Container fluid>
+    <Container fluid px={0}>
       <Flex>
-        {navIsShowing && (<NavbarColored data={navbarLinks} bottomData={navbarBottomLinks} version={version} />)}
+        {navIsShowing && (<NavbarColored data={navbarLinks} version={version} />)}
         <Flex direction="column" className={classes.content}>
           <HeaderSearch links={headerLinks} searchConent={searchConent} navbarState={navIsShowing} navbarToggle={() => { navToggle.toggle() }} />
           <Outlet />
