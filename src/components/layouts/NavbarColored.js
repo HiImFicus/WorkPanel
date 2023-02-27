@@ -1,6 +1,5 @@
 import { createStyles, Navbar, Group, Code, ScrollArea, Text } from '@mantine/core'
 import { LinksGroup } from './LinksGroup';
-import { useViewportSize } from '@mantine/hooks';
 import { IconListDetails } from '@tabler/icons-react';
 
 const useStyles = createStyles((theme) => ({
@@ -57,11 +56,10 @@ const useStyles = createStyles((theme) => ({
 
 export function NavbarColored({ data, version }) {
   const { classes, cx } = useStyles()
-  const { height } = useViewportSize();
   const links = data.map((item) => <LinksGroup {...item} key={item.label} />);
 
   return (
-    <Navbar mih={height} width={{ sm: 300 }} p='md' className={classes.navbar}>
+    <Navbar mih="100vh" width={{ sm: 300 }} p='md' className={classes.navbar}>
       <Navbar.Section className={classes.header}>
         <Group position="apart">
           <IconListDetails color="white" />

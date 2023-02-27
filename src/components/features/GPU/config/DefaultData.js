@@ -176,15 +176,30 @@ function GPUBasicData() {
         }
     }
 
-    return {
+    const arrayKey = {
         silicon: silicons,
-        markerbrand: brands,
+        makerBrand: brands,
         memorySize: memorySize,
         formFactor: formFactor,
         port: ports,
         partNumber: partNumber,
-        series: series
+    };
+
+    let basicData = {}
+    for (const key in arrayKey) {
+        if (Object.hasOwnProperty.call(arrayKey, key)) {
+            basicData[key] = [];
+            if (Array.isArray(arrayKey[key])) {
+                (arrayKey[key]).map((item) => {
+                    return (basicData[key]).push({ name: item })
+                })
+            }
+        }
     }
+
+    basicData['series'] = series;
+
+    return basicData;
 }
 
 function GPUModelData() {
@@ -221,6 +236,6 @@ function GPUModelData() {
 
 export default function GPUDefaultData() {
     let object = GPUBasicData();
-    object['model'] = GPUModelData();
+    object['modelNumber'] = GPUModelData();
     return object;
 }
