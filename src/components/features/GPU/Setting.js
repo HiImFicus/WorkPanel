@@ -1,231 +1,77 @@
-import { SimpleGrid, Group, Button } from '@mantine/core';
-import { MultiSelect } from '@mantine/core';
-import { useState } from 'react';
-import { FileButton, Text } from '@mantine/core';
+import { Grid, createStyles, Title, Text } from '@mantine/core';
+import GPUDefaultData from './config/DefaultData';
+import ModelConfig from './config/ModelConfig';
+import { gpuDB } from '../../../common/db';
 
-// const AMD = 'AMD';
-// const NVIDIA = 'NVIDIA';
+import NameConfig from './config/NameConfig';
 
-// // const silicons = [
-// //     { "label": AMD, },
-// //     { "label": NVIDIA, },
-// // ];
+const useStyles = createStyles((theme) => ({
+    wrapper: {
+        backgroundImage: `linear-gradient(-60deg, ${theme.colors[theme.primaryColor][4]} 0%, ${theme.colors[theme.primaryColor][7]
+            } 100%)`,
+        padding: theme.spacing.xl * 2.5,
 
-// const silicons = [
-//     AMD,
-//     NVIDIA,
-// ];
+        [`@media (max-width: ${theme.breakpoints.sm}px)`]: {
+            padding: theme.spacing.xl * 1.5,
+        },
+    },
 
-// // const brands = [
-// //     { "label": "DELL" },
-// //     { "label": "HP" },
-// //     { "label": "PNY" },
-// //     { "label": "MSI" },
-// //     { "label": "ASUS" },
-// // ];
+    title: {
+        fontFamily: `Greycliff CF, ${theme.fontFamily}`,
+        color: theme.white,
+        lineHeight: 1,
+    },
 
-// const brands = [
-//     "DELL",
-//     "HP",
-//     "PNY",
-//     "MSI",
-//     "ASUS",
-// ];
+    description: {
+        color: theme.colors[theme.primaryColor][0],
 
-// const cardSeries = {
-//     AMD: [
-//         'FirePro',
-//         'Radeon',
-//     ],
-//     NVIDIA: [
-//         'GeFore',
-//         'Riva',
-//         'Quadro',
-//         'TESLA'
-//     ],
-// };
+        [`@media (max-width: ${theme.breakpoints.sm}px)`]: {
+            maxWidth: '100%',
+        },
+    },
+}));
 
-// const cardModel = {
-//     'FirePro': [
-//         'V',
-//         'W',
-//     ],
-//     'Radeon': [
-//         'HD',
-//         'R5',
-//         'R7',
-//         'R9',
-//         'RX',
-//     ],
-//     'GeFore': [
-//         'MX',
-//         'FX',
-//         'GT',
-//         'GTS',
-//         'GTX',
-//     ],
-//     'Riva': [
-//         'TNT'
-//     ],
-//     'Quadro': [
-//         'K',
-//         'M',
-//         'P',
-//         'NVS',
-//     ],
-//     'TESLA': [
-//         'K'
-//     ],
-// };
-
-// const cardModelNumber = {
-//     'FirePro+V': [
-//         '3900',
-//         '7600',
-//         '7700',
-//     ],
-//     'FirePro+W': [
-//         '2100',
-//         '4100'
-//     ],
-//     'Radeon+HD': [
-//         '7770',
-//         '5770'
-//     ],
-//     'Radeon+R5': [
-//         '430',
-//     ],
-//     'Radeon+R7': [
-//         '360',
-//     ],
-//     'Radeon+R9': [
-//         '390',
-//     ],
-//     'Radeon+RX': [
-//         '560',
-//     ],
-
-//     'GeFore+MX': [
-//         '550',
-//     ],
-//     'GeFore+FX': [
-//         '5200'
-//     ],
-//     'GeFore+GT': [
-//         '730'
-//     ],
-//     'GeFore+GTS': [
-//         '450'
-//     ],
-//     'GeFore+GTX': [
-//         '970'
-//     ],
-
-//     'Riva+TNT': [
-//         '2'
-//     ],
-
-//     'Quadro+K': [
-//         '2000'
-//     ],
-//     'Quadro+M': [
-//         '2000'
-//     ],
-//     'Quadro+P': [
-//         '600'
-//     ],
-//     'Quadro+NVS': [
-//         '310',
-//         '315',
-//         '510',
-//     ]
-// }
-
-// const memorySize = [
-//     '128MB',
-//     '256MB',
-//     '512MB',
-//     '768MB',
-//     '1GB',
-//     '1.7GB',
-//     '2GB',
-//     '3GB',
-//     '4GB',
-//     '5GB',
-//     '6GB',
-//     '8GB',
-//     '10GB',
-//     '12GB',
-//     '16GB',
-//     '24GB',
-
-// ];
-
-// const formFactor = [
-//     'L-PROFILE',
-//     'H_PROFILE',
-// ];
-
-// const ports = [
-//     'DVI',
-//     'DP',
-//     'mini-DP',
-//     'HDMI',
-//     'mini-HDMI',
-//     'VGA',
-//     'DMS-59'
-// ];
-
-// const partNumber = [
-//     '762896-001',
-//     'CN-0F9P1R',
-//     'VCQ400-T',
-//     'BFGR981024GTXPOCE',
-//     '299-1E348-001SA'
-// ];
-
-// const cardsTemplates = [];
-// const cardsStack = [];
+const configListMap = [
+    { table: "silicon", label: "Silicon", hasDepend: false },
+    { table: "makerBrand", label: "Brand", hasDepend: false },
+    { table: "memorySize", label: "Memory", hasDepend: false },
+    { table: "formFactor", label: "Form", hasDepend: false },
+    { table: "port", label: "Port", hasDepend: false },
+    { table: "partNumber", label: "Part #", hasDepend: false },
+    { table: "series", label: "Series", hasDepend: true, depend: "silicon" },
+    { table: "modelNumber", label: "Model #", hasDepend: true, depend: "series" },
+];
 
 function Setting() {
-    const [data, setData] = useState([
-        { value: 'react', label: 'React' },
-        { value: 'ng', label: 'Angular' },
-    ]);
+    const { classes } = useStyles();
 
-    const [file, setFile] = useState(null);
+    function setDefaultData() {
+        const data = GPUDefaultData();
+        for (const key in GPUDefaultData) {
+            if (Object.hasOwnProperty.call(GPUDefaultData, key)) { }
+        }
+    }
+    console.log(GPUDefaultData());
 
     return (
-        <SimpleGrid cols={3} mt="xl" breakpoints={[{ maxWidth: 'sm', cols: 1 }]}>
-            <Group>
-                <MultiSelect width="100%"
-                    label="Creatable MultiSelect"
-                    data={data}
-                    placeholder="Select items"
-                    searchable
-                    creatable
-                    getCreateLabel={(query) => `+ Create ${query}`}
-                    onCreate={(query) => {
-                        const item = { value: query, label: query };
-                        setData((current) => [...current, item]);
-                        return item;
-                    }}
-                />
-                <SimpleGrid cols={2} breakpoints={[{ maxWidth: 'sm', cols: 1 }]}>
-                    <Button>Download</Button>
-                    <Group position="center">
-                        <FileButton onChange={setFile} accept="image/png,image/jpeg">
-                            {(props) => <Button {...props}>Upload File</Button>}
-                        </FileButton>
-                        {file && (
-                            <Text size="sm" align="center" mt="sm">
-                                Picked file: {file.name}
-                            </Text>
-                        )}
-                    </Group>
-                </SimpleGrid>
-            </Group>
-        </SimpleGrid>
+        <Grid>
+            <Grid.Col span={12} className={classes.wrapper}>
+                <div>
+                    <Title className={classes.title}>Setting of auto complete</Title>
+                    <Text className={classes.description} mt="sm"></Text>
+                </div>
+                <div className=""></div>
+            </Grid.Col>
+            {configListMap.map((config) => (
+                <Grid.Col span={6} key={config.label}>
+                    {config.hasDepend ? (
+                        <ModelConfig tableName={config.table} label={config.label} dependTableName={config.depend} />
+                    ) : (
+                        <NameConfig tableName={config.table} label={config.label} />
+                    )}
+                </Grid.Col>
+            ))}
+        </Grid>
     );
 }
 

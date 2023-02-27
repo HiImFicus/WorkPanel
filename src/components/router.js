@@ -1,11 +1,10 @@
-import {
-    createBrowserRouter,
-} from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import ErrorPage from "../common/error/ErrorPage";
 import Welcome from './features/Welcome';
 import App from "./App";
 import GPURooter from "./features/GPU/router";
 
+// todo navlink from here.
 const rootRouter = createBrowserRouter([
     {
         path: "/",

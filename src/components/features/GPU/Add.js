@@ -12,7 +12,7 @@ function Add() {
             memory: '',
             form: '',
             ports: [
-                { type: '', active: true, key: randomId() }
+                // { type: '', active: true, key: randomId() }
             ],
             partNumber: '',
         },
@@ -105,6 +105,16 @@ function Add() {
                     />
                 </Grid.Col>
                 <Grid.Col span={12}>
+                    {/* <Group position="center" mt="md"> */}
+                    <Group mt="md">
+                        <Button
+                            onClick={() =>
+                                form.insertListItem('ports', { type: '', active: true, key: randomId() })
+                            }
+                        >
+                            Add Port
+                        </Button>
+                    </Group>
                     <SimpleGrid
                         cols={2}
                         spacing="lg"
@@ -120,15 +130,6 @@ function Add() {
 
                         {portsFields}
                     </SimpleGrid>
-                    <Group position="center" mt="md">
-                        <Button
-                            onClick={() =>
-                                form.insertListItem('ports', { type: '', active: true, key: randomId() })
-                            }
-                        >
-                            Add Port
-                        </Button>
-                    </Group>
                 </Grid.Col>
 
                 <Grid.Col span={12}>

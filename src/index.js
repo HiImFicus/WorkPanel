@@ -5,9 +5,10 @@ import { RouterProvider } from "react-router-dom";
 import rootRouter from "./components/router";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const theme = 'dark';
 root.render(
   <React.StrictMode>
-    <MantineProvider theme={{ colorScheme: 'dark' }} withGlobalStyles withNormalizeCSS>
+    <MantineProvider theme={{ colorScheme: theme }} withGlobalStyles withNormalizeCSS>
       <RouterProvider router={rootRouter} />
     </MantineProvider>
   </React.StrictMode>
