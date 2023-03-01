@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Group, Box, Collapse, ThemeIcon, Text, UnstyledButton, createStyles } from '@mantine/core';
+import { Group, Box, Collapse, ThemeIcon, UnstyledButton, createStyles } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
 

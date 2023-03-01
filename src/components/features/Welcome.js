@@ -35,15 +35,17 @@ export function Welcome() {
     const { classes } = useStyles();
 
     return (
-        <div className={classes.wrapper}>
-            <div>
-                <Title className={classes.title}>Hello, Ficus!</Title>
-                <Text className={classes.description} mt="sm">
-                    Welcome to work panel.
-                </Text>
+        <>
+            <div className={classes.wrapper}>
+                <div>
+                    <Title className={classes.title}>Hello, Ficus!</Title>
+                    <Text className={classes.description} mt="sm">
+                        Welcome to work panel.
+                    </Text>
+                </div>
+                <div className=""></div>
             </div>
-            <div className=""></div>
-        </div>
+        </>
     );
 }
 

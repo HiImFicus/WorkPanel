@@ -55,11 +55,11 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export function NavbarColored({ data, version }) {
-  const { classes, cx } = useStyles()
+  const { classes } = useStyles()
   const links = data.map((item) => <LinksGroup {...item} key={item.label} />);
 
   return (
-    <Navbar mih="100vh" width={{ sm: 300 }} p='md' className={classes.navbar}>
+    <Navbar mih="100vh" width={{ sm: 300 }} px='md' className={classes.navbar}>
       <Navbar.Section className={classes.header}>
         <Group position="apart">
           <IconListDetails color="white" />

@@ -7,14 +7,13 @@ const gpuDB = new Dexie('GPUWork');
 gpuDB.version(1).stores({
     silicon: '++id, &name',
     makerBrand: '++id, &name',
-    series: '++id, [name+silicon]',
-    modelNumber: '++id, [name+series]',
+    model: '++id, [name+silicon]',
     memorySize: '++id, &name',
     formFactor: '++id, &name',
     port: '++id, &name',
     partNumber: '++id, &name',
-    record: '++id, [silicon+brand+model+memory+formFactor+ports], *partNumbers',
-    stock: '++id, silicon, brand, model, memory, formFactor, ports, *partNumbers, date',
+    record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]',
+    stock: '++id, silicon, brand, model, memory, formFactor, ports, partNumbers, date, selfState, status',
 });
 
 //clear every table when refresh

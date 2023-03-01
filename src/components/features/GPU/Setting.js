@@ -6,6 +6,7 @@ import { gpuDB } from '../../../common/db';
 import NameConfig from './config/NameConfig';
 import { useState } from 'react';
 
+//todo
 const useStyles = createStyles((theme) => ({
     wrapper: {
         backgroundImage: `linear-gradient(-60deg, ${theme.colors[theme.primaryColor][4]} 0%, ${theme.colors[theme.primaryColor][7]
@@ -15,6 +16,7 @@ const useStyles = createStyles((theme) => ({
         [`@media (max-width: ${theme.breakpoints.sm}px)`]: {
             padding: theme.spacing.xl * 1.5,
         },
+        marginBottom: 10,
     },
 
     title: {
@@ -33,20 +35,21 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const configListMap = [
-    { table: "silicon", label: "Silicon", hasDepend: false },
-    { table: "formFactor", label: "Form", hasDepend: false },
-    { table: "makerBrand", label: "Brand", hasDepend: false },
-    { table: "memorySize", label: "Memory", hasDepend: false },
-    { table: "port", label: "Port", hasDepend: false },
-    { table: "partNumber", label: "Part #", hasDepend: false },
-    { table: "series", label: "Series", hasDepend: true, depend: "silicon" },
-    { table: "modelNumber", label: "Model #", hasDepend: true, depend: "series" },
+    { table: "silicon", label: "Silicon", hasDepend: false, span: 6 },
+    { table: "formFactor", label: "Form", hasDepend: false, span: 6 },
+    { table: "makerBrand", label: "Brand", hasDepend: false, span: 6 },
+    { table: "memorySize", label: "Memory", hasDepend: false, span: 6 },
+    { table: "port", label: "Port", hasDepend: false, span: 6 },
+    { table: "partNumber", label: "Part #", hasDepend: false, span: 6 },
+    { table: "model", label: "Model", hasDepend: true, depend: "silicon", span: 12 },
 ];
 
 function Setting() {
     const { classes } = useStyles();
     const [hasDefault, setHasDefault] = useState(false);
 
+
+    //change model table data.
     function setDefaultData() {
         clearAll();
         const data = GPUDefaultData();
@@ -64,8 +67,8 @@ function Setting() {
     }
 
     return (
-        <Grid>
-            <Grid.Col span={12} className={classes.wrapper}>
+        <>
+            <div className={classes.wrapper}>
                 <div>
                     <Title className={classes.title}>Setting of auto complete</Title>
                     <Text className={classes.description} mt="sm"></Text>
@@ -81,28 +84,25 @@ function Setting() {
                                 Set Default Data
                             </Button>
                         )}
-                        {/* {!hasDefault && (
-                            <Button onClick={setDefaultData} color="indigo">
-                                Set Default Data
-                            </Button>
-                        )} */}
                         <Button onClick={clearAll} color="dark">
                             Clear All Data
                         </Button>
                     </Button.Group>
 
                 </div>
-            </Grid.Col>
-            {configListMap.map((config) => (
-                <Grid.Col span={6} key={config.label}>
-                    {config.hasDepend ? (
-                        <ModelConfig tableName={config.table} label={config.label} dependTableName={config.depend} />
-                    ) : (
-                        <NameConfig tableName={config.table} label={config.label} />
-                    )}
-                </Grid.Col>
-            ))}
-        </Grid>
+            </div>
+            <Grid>
+                {configListMap.map((config) => (
+                    <Grid.Col span={config.span} key={config.label}>
+                        {config.hasDepend ? (
+                            <ModelConfig tableName={config.table} label={config.label} dependTableName={config.depend} />
+                        ) : (
+                            <NameConfig tableName={config.table} label={config.label} />
+                        )}
+                    </Grid.Col>
+                ))}
+            </Grid>
+        </>
     );
 }
 

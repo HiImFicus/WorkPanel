@@ -1,3 +1,12 @@
+todo:
+toggle useEffect
+number count report
+top three and total report
+date
+data model
+query by hash.
+GPU-Z info
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
