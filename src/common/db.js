@@ -13,11 +13,11 @@ gpuDB.version(1).stores({
     port: '++id, &name',
     partNumber: '++id, &name',
     record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]',
-    stock: '++id, silicon, brand, model, memory, formFactor, ports, partNumbers, date, selfState, status',
+    stock: '++id, silicon, brand, model, memory, formFactor, ports, partNumbers, date, selfState, status, defect',
 });
 
 //clear every table when refresh
-// gpuDB.tables.map((table) => table.clear())
+gpuDB.tables.map((table) => table.clear())
 // Dexie.delete('GPUWork');
 
 export { gpuDB };

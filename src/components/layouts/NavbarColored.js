@@ -59,6 +59,7 @@ export function NavbarColored({ data, version }) {
   const links = data.map((item) => <LinksGroup {...item} key={item.label} />);
 
   return (
+    //todo height useState set
     <Navbar mih="100vh" width={{ sm: 300 }} px='md' className={classes.navbar}>
       <Navbar.Section className={classes.header}>
         <Group position="apart">

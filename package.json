@@ -12,6 +12,8 @@
     "@mantine/notifications": "^5.10.3",
     "@mantine/prism": "^5.10.3",
     "@tabler/icons-react": "^2.3.0",
+    "ag-grid-community": "^29.1.0",
+    "ag-grid-react": "^29.1.0",
     "dayjs": "^1.11.7",
     "dexie": "^3.2.3",
     "dexie-react-hooks": "^1.1.1",

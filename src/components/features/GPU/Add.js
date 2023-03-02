@@ -46,14 +46,16 @@ const useStyles = createStyles((theme) => ({
 
 function Add() {
     const table = gpuDB.stock;
-    const record = gpuDB.record;
+    // const record = gpuDB.record;
     const { classes } = useStyles();
     const [partNumberData, setPartNumberData] = useState([
         { value: 'react', label: 'React' },
         { value: 'ng', label: 'Angular' },
     ]);
-
-    const currentDate = new Date();
+    const [defectData, setDefectData] = useState([
+        { value: 'react', label: 'React' },
+        { value: 'ng', label: 'Angular' },
+    ]);
 
     const form = useForm({
         initialValues: {
@@ -62,13 +64,14 @@ function Add() {
             model: '',
             memory: '',
             formFactor: '',
+            defect: '',
             date: new Date(),
             state: selfStateGood,
             status: statusInStock,
             ports: [
                 // { type: '', active: true, key: randomId() }
             ],
-            partNumber: [],
+            partNumbers: [],
         },
         validate: {
             silicon: isNotEmpty('required'),
@@ -104,12 +107,25 @@ function Add() {
     const circleSize = 120;
     const circleThickness = 10;
 
-    function getPortString(ports) {
-        return ""
+    function arrayToString(array) {
+        return array.join(",");
     }
 
-    function getPartNumberString(partNumber) {
-        return ""
+    function objectArrayToString(arrayOfObject) {
+        return arrayOfObject.map((object) => {
+            let allValues = [];
+            for (const key in object) {
+                if (Object.hasOwnProperty.call(object, key)) {
+                    allValues.push(object[key]);
+                }
+            }
+
+            return allValues.join(",") + ";";
+        })
+    }
+
+    function getDateString(date) {
+        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     }
 
     async function save() {
@@ -118,29 +134,31 @@ function Add() {
 
             //save     stock: '++id, silicon, brand, model, memory, formFactor, *ports, *partNumbers, date, selfState, status',
             const cardInfo = {
-                silicon: form.silicon,
-                brand: form.brand,
-                model: form.model,
-                memory: form.memory,
-                formFactor: form.formFactor,
-                ports: getPortString(form.ports),
-                partNumber: getPartNumberString(form.partNumber),
+                silicon: form.values.silicon,
+                brand: form.values.brand,
+                model: form.values.model,
+                memory: form.values.memory,
+                formFactor: form.values.formFactor,
+                ports: objectArrayToString(form.values.ports),
+                partNumbers: arrayToString(form.values.partNumbers),
             }
 
-            const newCard = { ...cardInfo, date: form.date, selfState: form.state, status: form.status, }
+            const newCard = { ...cardInfo, date: getDateString(form.values.date), selfState: form.values.state, status: form.values.status, defect: arrayToString(form.values.defect), }
 
             // save     record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]'
-            const count = await table.where('[silicon+brand+model+memory+formFactor+ports+partNumbers]')
-                .equals([
-                    cardInfo.silicon, cardInfo.brand,
-                    cardInfo.model, cardInfo.memory,
-                    cardInfo.formFactor, cardInfo.ports, cardInfo.partNumber
-                ]).count();
+            // const count = await table.where('[silicon+brand+model+memory+formFactor+ports+partNumbers]')
+            //     .equals([
+            //         cardInfo.silicon, cardInfo.brand,
+            //         cardInfo.model, cardInfo.memory,
+            //         cardInfo.formFactor, cardInfo.ports, cardInfo.partNumbers
+            //     ]).count();
 
             // use Transaction when save
-            if (!count) {
-                record.add(cardInfo)
-            }
+            // if (!count) {
+            //     record.add(cardInfo)
+            // }
+
+            console.log(newCard);
             const newId = await table.add(newCard);
             console.log('Success saved! id is ' + newId);
         } catch (error) {
@@ -149,8 +167,9 @@ function Add() {
     }
 
     return (
-        <form onSubmit={form.onSubmit(() => {
-            console.log(form.values)
+        <form onSubmit={form.onSubmit((values) => {
+            console.log(values)
+            save()
         })}>
             <Grid grow>
                 <Grid.Col span={12} className={classes.wrapper}>
@@ -323,7 +342,24 @@ function Add() {
                             setPartNumberData((current) => [...current, item]);
                             return item;
                         }}
-                        {...form.getInputProps('partNumber')}
+                        {...form.getInputProps('partNumbers')}
+                    />
+                </Grid.Col>
+
+                <Grid.Col span={12}>
+                    <MultiSelect
+                        label="DEFECT"
+                        data={defectData}
+                        placeholder=""
+                        searchable
+                        creatable
+                        getCreateLabel={(query) => `+ Create ${query}`}
+                        onCreate={(query) => {
+                            const item = { value: query, label: query };
+                            setDefectData((current) => [...current, item]);
+                            return item;
+                        }}
+                        {...form.getInputProps('defect')}
                     />
                 </Grid.Col>
 
