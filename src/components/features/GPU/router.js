@@ -1,11 +1,11 @@
 import Overview from './Overview';
 import Setting from './Setting';
 import Add from './Add';
-import Root from './Root'
+import List from './List';
 
 const router = {
     path: "gpu",
-    element: <Root />,
+    // element: <Root />,
     children: [
         {
             path: "",
@@ -18,6 +18,10 @@ const router = {
         {
             path: "add",
             element: <Add />
+        },
+        {
+            path: "list",
+            element: <List />
         },
     ],
 }

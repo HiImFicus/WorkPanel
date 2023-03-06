@@ -34,7 +34,8 @@ const navbarLinks = [
     icon: IconHeartRateMonitor,
     links: [
       { label: 'Overview', link: '/gpu' },
-      { label: 'Operate', link: '/gpu/add' },
+      { label: 'List', link: '/gpu/list' },
+      { label: 'Add', link: '/gpu/add' },
       { label: 'Setting', link: '/gpu/setting' },
     ],
   },

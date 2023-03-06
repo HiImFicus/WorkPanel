@@ -34,6 +34,16 @@ const useStyles = createStyles((theme) => ({
     },
 }));
 
+const configTableMap = [
+    "silicon",
+    "makerBrand",
+    "model",
+    "memorySize",
+    "formFactor",
+    "port",
+    "partNumber",
+];
+
 const configListMap = [
     { table: "silicon", label: "Silicon", hasDepend: false, span: 6 },
     { table: "formFactor", label: "Form", hasDepend: false, span: 6 },
@@ -53,6 +63,7 @@ function Setting() {
     function setDefaultData() {
         clearAll();
         const data = GPUDefaultData();
+        console.log(data);
         for (const key in data) {
             if (Object.hasOwnProperty.call(data, key)) {
                 gpuDB[key].bulkAdd(data[key])
@@ -62,7 +73,7 @@ function Setting() {
     }
 
     function clearAll() {
-        gpuDB.tables.map((table) => table.clear())
+        configTableMap.map((table) => gpuDB[table].clear())
         setHasDefault(false);
     }
 

@@ -7,7 +7,7 @@ const gpuDB = new Dexie('GPUWork');
 gpuDB.version(1).stores({
     silicon: '++id, &name',
     makerBrand: '++id, &name',
-    model: '++id, [name+silicon]',
+    model: '++id, &name, silicon',
     memorySize: '++id, &name',
     formFactor: '++id, &name',
     port: '++id, &name',
@@ -17,7 +17,7 @@ gpuDB.version(1).stores({
 });
 
 //clear every table when refresh
-gpuDB.tables.map((table) => table.clear())
+// gpuDB.tables.map((table) => table.clear())
 // Dexie.delete('GPUWork');
 
 export { gpuDB };

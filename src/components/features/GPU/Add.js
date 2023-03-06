@@ -1,14 +1,14 @@
 import {
     Text, Grid, Mark, Highlight,
     createStyles, SimpleGrid, Group, Button,
-    Switch, Autocomplete, ActionIcon, Select, List,
+    Switch, ActionIcon, Select, List,
     RingProgress, SegmentedControl, MultiSelect
 } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
 import { useForm, isNotEmpty } from '@mantine/form';
 import { randomId } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { gpuDB } from '../../../common/db';
 
 const selfStateGood = "still-work";
@@ -45,17 +45,98 @@ const useStyles = createStyles((theme) => ({
 }));
 
 function Add() {
-    const table = gpuDB.stock;
-    // const record = gpuDB.record;
     const { classes } = useStyles();
-    const [partNumberData, setPartNumberData] = useState([
-        { value: 'react', label: 'React' },
-        { value: 'ng', label: 'Angular' },
-    ]);
     const [defectData, setDefectData] = useState([
-        { value: 'react', label: 'React' },
-        { value: 'ng', label: 'Angular' },
+        { value: 'Bad Port', label: 'Bad Port' },
+        { value: 'Bad Fan', label: 'Bad Fan' },
+        { value: 'Noisy Fan', label: 'Noisy Fan' },
     ]);
+
+    const [recordData, setRecordData] = useState([]);
+    const [siliconData, setSiliconData] = useState([]);
+    const [brandData, setBrandData] = useState([]);
+    const [modelData, setModelData] = useState([]);
+    const [memoryData, setMemoryData] = useState([]);
+    const [formFactorData, setFormFactorData] = useState([]);
+    const [portData, setPortData] = useState([]);
+    const [partNumberData, setPartNumberData] = useState([]);
+
+    function getNameArrayFromObjectArray(results) {
+        if (results) {
+            return results.map((item) => {
+                if (item.silicon) {
+                    return { value: item.name, label: item.name, group: item.silicon }
+                }
+                return { value: item.name, label: item.name }
+            });
+        }
+        return [];
+    }
+
+    useEffect(() => {
+        async function setDefaultData() {
+            setSiliconData(await gpuDB.silicon.toArray(getNameArrayFromObjectArray));
+            setBrandData(await gpuDB.makerBrand.toArray(getNameArrayFromObjectArray));
+            setMemoryData(await gpuDB.memorySize.toArray(getNameArrayFromObjectArray));
+            setModelData(await gpuDB.model.toArray(getNameArrayFromObjectArray));
+            setFormFactorData(await gpuDB.formFactor.toArray(getNameArrayFromObjectArray));
+            setPortData(await gpuDB.port.toArray(getNameArrayFromObjectArray));
+            setPartNumberData(await gpuDB.partNumber.toArray(getNameArrayFromObjectArray));
+            setRecordData(await gpuDB.record.toArray((records) => {
+                if (records) {
+                    return records.map((record) => {
+                        return {
+                            value:
+                                `${record.silicon}%${record.brand}%${record.model}%${record.memory}%${record.formFactor}%${record.ports}%${record.partNumbers}`,
+                            label:
+                                `${record.brand}-${record.model}-${record.memory}-${record.formFactor}-${record.ports}-${record.partNumbers}`,
+                            group: record.silicon
+                        }
+                    })
+                }
+                return []
+            }));
+        }
+
+        setDefaultData();
+        return () => {
+            setSiliconData([]);
+            setBrandData([]);
+            setModelData([]);
+            setMemoryData([]);
+            setFormFactorData([]);
+            setPortData([]);
+            setPartNumberData([]);
+            setRecordData([]);
+        }
+    }, [])
+
+    function createNewPartNumberData(newNumber) {
+        const item = { value: newNumber, label: newNumber };
+        //upate to db
+        async function update() {
+            await gpuDB.partNumber.add({ name: newNumber });
+        }
+        update()
+        setPartNumberData((current) => [...current, item]);
+        return item;
+    }
+
+    function createNewModel(newModel) {
+        const parseArray = newModel.split(":");
+        if (parseArray.length === 2) {
+            const modelName = parseArray[1].trim();
+            const silicon = parseArray[0].trim();
+            //upate to db
+            async function update() {
+                await gpuDB.model.add({ name: modelName, silicon: silicon });
+            }
+            update();
+            const item = { value: modelName, label: modelName, group: silicon };
+            setModelData((current) => [...current, item]);
+            return item;
+        }
+    }
 
     const form = useForm({
         initialValues: {
@@ -75,6 +156,7 @@ function Add() {
         },
         validate: {
             silicon: isNotEmpty('required'),
+            brand: isNotEmpty('required'),
             model: isNotEmpty('required'),
             memory: isNotEmpty('required'),
             formFactor: isNotEmpty('required'),
@@ -84,15 +166,30 @@ function Add() {
         },
     });
 
+    function changeSiliconChangeModelData(silicon) {
+        async function getModelData() {
+            return await gpuDB.model.toArray(getNameArrayFromObjectArray)
+        }
+        let modelData = getModelData();
+
+        if (silicon) {
+            modelData = modelData.then(results => results.filter((item) => item.group === silicon));
+        }
+
+        modelData.then(results => setModelData(results))
+        form.setFieldValue("model", "")
+        form.setFieldValue("silicon", silicon)
+    }
+
     const portsFields = form.values.ports.map((item, index) => (
         <Group key={item.key} mt="xs">
             <Select
-                placeholder="Port type"
-                searchable
-                nothingFound="No options"
-                data={['React', 'Angular', 'Svelte', 'Vue']}
-                clearable
+                placeholder="Pick one"
+                data={portData}
                 {...form.getInputProps(`ports.${index}.type`)}
+                nothingFound="No options"
+                clearable
+                searchable
             />
             <Switch
                 label="Active"
@@ -107,21 +204,79 @@ function Add() {
     const circleSize = 120;
     const circleThickness = 10;
 
-    function arrayToString(array) {
-        return array.join(",");
+    function setValueByTemplate(templateString) {
+        if (!templateString) {
+            form.reset()
+            return
+        }
+        const template = templateString.split("%");
+        if (template.length === 7) {
+            form.setValues({
+                silicon: template[0],
+                brand: template[1],
+                model: template[2],
+                memory: template[3],
+                formFactor: template[4],
+                ports: parsePortsStringToObjectArray(template[5]),
+                partNumbers: template[6].split(",").map(item => item.trim()),
+            });
+        } else {
+            form.reset()
+        }
     }
 
-    function objectArrayToString(arrayOfObject) {
-        return arrayOfObject.map((object) => {
-            let allValues = [];
-            for (const key in object) {
-                if (Object.hasOwnProperty.call(object, key)) {
-                    allValues.push(object[key]);
+    function parsePortsStringToObjectArray(string) {
+        const ports = string.split(",")
+        const portsObjectArray = [];
+        ports.map((port) => {
+            const parePort = port.split("x");
+            if (parePort.length === 2) {
+                let n = 0;
+                while (n < parseInt(parePort[0])) {
+                    portsObjectArray.push({ type: parePort[1], active: true, key: randomId() });
+                    n++;
+                }
+            } else {
+                portsObjectArray.push({ type: parePort[0], active: true, key: randomId() });
+            }
+            return [];
+        });
+        return portsObjectArray;
+    }
+
+    function arrayToString(array) {
+        if (Array.isArray(array)) {
+            return array.map(item => item.trim()).join(", ");
+        }
+        return array;
+    }
+
+    function parsePortsToString(portsObject) {
+        let ports = {};
+        portsObject.map((port) => {
+            if (port.type) {
+                // return `${port.type}: ${port.active}`;
+                if (ports[port.type]) {
+                    ports[port.type] = ports[port.type] + 1;
+                } else {
+                    ports[port.type] = 1;
                 }
             }
+            return [];
+        });
 
-            return allValues.join(",") + ";";
-        })
+        let portsArray = [];
+        for (const port in ports) {
+            if (Object.hasOwnProperty.call(ports, port)) {
+                if (ports[port] < 2) {
+                    portsArray.push(port)
+                } else {
+                    portsArray.push(`${ports[port]}x${port}`)
+                }
+            }
+        }
+
+        return portsArray.join(",");
     }
 
     function getDateString(date) {
@@ -139,28 +294,30 @@ function Add() {
                 model: form.values.model,
                 memory: form.values.memory,
                 formFactor: form.values.formFactor,
-                ports: objectArrayToString(form.values.ports),
+                ports: parsePortsToString(form.values.ports),
                 partNumbers: arrayToString(form.values.partNumbers),
             }
 
             const newCard = { ...cardInfo, date: getDateString(form.values.date), selfState: form.values.state, status: form.values.status, defect: arrayToString(form.values.defect), }
 
             // save     record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]'
-            // const count = await table.where('[silicon+brand+model+memory+formFactor+ports+partNumbers]')
-            //     .equals([
-            //         cardInfo.silicon, cardInfo.brand,
-            //         cardInfo.model, cardInfo.memory,
-            //         cardInfo.formFactor, cardInfo.ports, cardInfo.partNumbers
-            //     ]).count();
+            const count = await gpuDB.record.where('[silicon+brand+model+memory+formFactor+ports+partNumbers]')
+                .equals([
+                    cardInfo.silicon, cardInfo.brand,
+                    cardInfo.model, cardInfo.memory,
+                    cardInfo.formFactor, cardInfo.ports, cardInfo.partNumbers
+                ]).count();
 
-            // use Transaction when save
-            // if (!count) {
-            //     record.add(cardInfo)
-            // }
 
-            console.log(newCard);
-            const newId = await table.add(newCard);
-            console.log('Success saved! id is ' + newId);
+            await gpuDB.transaction('rw', [gpuDB.record, gpuDB.stock], async () => {
+                // use Transaction when save
+                if (!count) {
+                    gpuDB.record.add(cardInfo)
+                }
+                const newId = await gpuDB.stock.add(newCard);
+                console.log('Success saved! id is ' + newId);
+
+            });
         } catch (error) {
             throw error
         }
@@ -168,7 +325,6 @@ function Add() {
 
     return (
         <form onSubmit={form.onSubmit((values) => {
-            console.log(values)
             save()
         })}>
             <Grid grow>
@@ -216,58 +372,65 @@ function Add() {
                     </Grid>
                 </Grid.Col>
                 <Grid.Col span={12}>
-                    <Autocomplete
-                        label="Template"
+                    <Select
+                        label="RECORD TEMPLATE"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
+                        data={recordData}
+                        clearable
+                        searchable
+                        onChange={setValueByTemplate}
                     />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Autocomplete
+                    <Select
                         label="SILICON"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
-                        name="silicon"
+                        data={siliconData}
                         {...form.getInputProps('silicon')}
+                        onChange={changeSiliconChangeModelData}
+                        clearable
                     />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Autocomplete
+                    <Select
                         label="BRAND"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
-                        name="brand"
+                        data={brandData}
                         {...form.getInputProps('brand')}
+                        clearable
+                        searchable
                     />
                 </Grid.Col>
                 <Grid.Col span={12}>
-                    <Autocomplete
+                    <Select
                         label="MODEL CODE"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
-                        name="model"
+                        data={modelData}
                         {...form.getInputProps('model')}
-
+                        clearable
+                        searchable
+                        creatable
+                        getCreateLabel={(query) => `+ Create ${query}, Format: Silicon: Model Code`}
+                        onCreate={createNewModel}
                     />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Autocomplete
+                    <Select
                         label="MEMORY"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
-                        name="memory"
+                        data={memoryData}
                         {...form.getInputProps('memory')}
-
+                        clearable
+                        searchable
                     />
                 </Grid.Col>
                 <Grid.Col span={6}>
-                    <Autocomplete
+                    <Select
                         label="FORM FACTOR"
                         placeholder="Pick one"
-                        data={['React', 'Angular', 'Svelte', 'Vue']}
-                        name="form"
+                        data={formFactorData}
                         {...form.getInputProps('formFactor')}
-
+                        clearable
                     />
                 </Grid.Col>
                 <Grid.Col span={6}>
@@ -337,11 +500,7 @@ function Add() {
                         searchable
                         creatable
                         getCreateLabel={(query) => `+ Create ${query}`}
-                        onCreate={(query) => {
-                            const item = { value: query, label: query };
-                            setPartNumberData((current) => [...current, item]);
-                            return item;
-                        }}
+                        onCreate={createNewPartNumberData}
                         {...form.getInputProps('partNumbers')}
                     />
                 </Grid.Col>
