@@ -12,7 +12,7 @@ gpuDB.version(1).stores({
     formFactor: '++id, &name',
     port: '++id, &name',
     partNumber: '++id, &name',
-    record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]',
+    record: '++id, &[silicon+brand+model+memory+formFactor+ports+partNumbers]',
     stock: '++id, silicon, brand, model, memory, formFactor, ports, partNumbers, date, selfState, status, defect',
 });
 

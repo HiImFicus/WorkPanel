@@ -10,21 +10,25 @@ import { randomId } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { gpuDB } from '../../../common/db';
-
-const selfStateGood = "still-work";
-const selfStateBad = "broken";
+import { arrayToString } from '../../../common/Helps';
+import {
+    addNewModel,
+    addNewPartNumber,
+    getAllModels,
+    parseModelFromString,
+    parsePortsStringToObjectArray,
+    stockDefectMap, stockSelfStateBad,
+    stockSelfStateGood, stockStatusInStock, stockStatusOut, stockSaveFromAdd
+} from './DBManager';
 
 const selfStateMap = [
-    { label: "still-working", value: selfStateGood },
-    { label: "broken", value: selfStateBad, },
+    { label: "still-working", value: stockSelfStateGood },
+    { label: "broken", value: stockSelfStateBad, },
 ];
 
-const statusInStock = "in";
-const statusOut = "out";
-
 const statusMap = [
-    { label: "into-stock", value: statusInStock },
-    { label: "out", value: statusOut, },
+    { label: "into-stock", value: stockStatusInStock },
+    { label: "out", value: stockStatusOut, },
 ];
 
 const useStyles = createStyles((theme) => ({
@@ -46,11 +50,7 @@ const useStyles = createStyles((theme) => ({
 
 function Add() {
     const { classes } = useStyles();
-    const [defectData, setDefectData] = useState([
-        { value: 'Bad Port', label: 'Bad Port' },
-        { value: 'Bad Fan', label: 'Bad Fan' },
-        { value: 'Noisy Fan', label: 'Noisy Fan' },
-    ]);
+    const [defectData, setDefectData] = useState(stockDefectMap);
 
     const [recordData, setRecordData] = useState([]);
     const [siliconData, setSiliconData] = useState([]);
@@ -114,25 +114,17 @@ function Add() {
     function createNewPartNumberData(newNumber) {
         const item = { value: newNumber, label: newNumber };
         //upate to db
-        async function update() {
-            await gpuDB.partNumber.add({ name: newNumber });
-        }
-        update()
+        addNewPartNumber(newNumber)
         setPartNumberData((current) => [...current, item]);
         return item;
     }
 
     function createNewModel(newModel) {
-        const parseArray = newModel.split(":");
-        if (parseArray.length === 2) {
-            const modelName = parseArray[1].trim();
-            const silicon = parseArray[0].trim();
+        const model = parseModelFromString(newModel);
+        if (model) {
             //upate to db
-            async function update() {
-                await gpuDB.model.add({ name: modelName, silicon: silicon });
-            }
-            update();
-            const item = { value: modelName, label: modelName, group: silicon };
+            addNewModel(model.name, model.silicon)
+            const item = { value: model.name, label: model.name, group: model.silicon };
             setModelData((current) => [...current, item]);
             return item;
         }
@@ -147,8 +139,8 @@ function Add() {
             formFactor: '',
             defect: '',
             date: new Date(),
-            state: selfStateGood,
-            status: statusInStock,
+            selfState: stockSelfStateGood,
+            status: stockStatusInStock,
             ports: [
                 // { type: '', active: true, key: randomId() }
             ],
@@ -161,16 +153,13 @@ function Add() {
             memory: isNotEmpty('required'),
             formFactor: isNotEmpty('required'),
             date: isNotEmpty('required'),
-            state: isNotEmpty('required'),
+            selfState: isNotEmpty('required'),
             status: isNotEmpty('required'),
         },
     });
 
     function changeSiliconChangeModelData(silicon) {
-        async function getModelData() {
-            return await gpuDB.model.toArray(getNameArrayFromObjectArray)
-        }
-        let modelData = getModelData();
+        let modelData = getAllModels(getNameArrayFromObjectArray);
 
         if (silicon) {
             modelData = modelData.then(results => results.filter((item) => item.group === silicon));
@@ -225,106 +214,18 @@ function Add() {
         }
     }
 
-    function parsePortsStringToObjectArray(string) {
-        const ports = string.split(",")
-        const portsObjectArray = [];
-        ports.map((port) => {
-            const parePort = port.split("x");
-            if (parePort.length === 2) {
-                let n = 0;
-                while (n < parseInt(parePort[0])) {
-                    portsObjectArray.push({ type: parePort[1], active: true, key: randomId() });
-                    n++;
-                }
-            } else {
-                portsObjectArray.push({ type: parePort[0], active: true, key: randomId() });
-            }
-            return [];
-        });
-        return portsObjectArray;
-    }
-
-    function arrayToString(array) {
-        if (Array.isArray(array)) {
-            return array.map(item => item.trim()).join(", ");
-        }
-        return array;
-    }
-
-    function parsePortsToString(portsObject) {
-        let ports = {};
-        portsObject.map((port) => {
-            if (port.type) {
-                // return `${port.type}: ${port.active}`;
-                if (ports[port.type]) {
-                    ports[port.type] = ports[port.type] + 1;
-                } else {
-                    ports[port.type] = 1;
-                }
-            }
-            return [];
-        });
-
-        let portsArray = [];
-        for (const port in ports) {
-            if (Object.hasOwnProperty.call(ports, port)) {
-                if (ports[port] < 2) {
-                    portsArray.push(port)
-                } else {
-                    portsArray.push(`${ports[port]}x${port}`)
-                }
-            }
-        }
-
-        return portsArray.join(",");
-    }
-
-    function getDateString(date) {
-        return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-    }
-
     async function save() {
         try {
             //check form data
 
-            //save     stock: '++id, silicon, brand, model, memory, formFactor, *ports, *partNumbers, date, selfState, status',
-            const cardInfo = {
-                silicon: form.values.silicon,
-                brand: form.values.brand,
-                model: form.values.model,
-                memory: form.values.memory,
-                formFactor: form.values.formFactor,
-                ports: parsePortsToString(form.values.ports),
-                partNumbers: arrayToString(form.values.partNumbers),
-            }
-
-            const newCard = { ...cardInfo, date: getDateString(form.values.date), selfState: form.values.state, status: form.values.status, defect: arrayToString(form.values.defect), }
-
-            // save     record: '++id, [silicon+brand+model+memory+formFactor+ports+partNumbers]'
-            const count = await gpuDB.record.where('[silicon+brand+model+memory+formFactor+ports+partNumbers]')
-                .equals([
-                    cardInfo.silicon, cardInfo.brand,
-                    cardInfo.model, cardInfo.memory,
-                    cardInfo.formFactor, cardInfo.ports, cardInfo.partNumbers
-                ]).count();
-
-
-            await gpuDB.transaction('rw', [gpuDB.record, gpuDB.stock], async () => {
-                // use Transaction when save
-                if (!count) {
-                    gpuDB.record.add(cardInfo)
-                }
-                const newId = await gpuDB.stock.add(newCard);
-                console.log('Success saved! id is ' + newId);
-
-            });
+            stockSaveFromAdd(form.values).then((newId) => console.log(newId))
         } catch (error) {
             throw error
         }
     }
 
     return (
-        <form onSubmit={form.onSubmit((values) => {
+        <form onSubmit={form.onSubmit(() => {
             save()
         })}>
             <Grid grow>
@@ -445,7 +346,7 @@ function Add() {
                 <Grid.Col span={6}>
                     <Grid>
                         <Grid.Col span={6}>
-                            {form.errors.state ? (
+                            {form.errors.selfState ? (
                                 <Text fz="sm" fw={500} c="red" >STATE*</Text>
                             ) : (
                                 <Text fz="sm" fw={500} >STATE</Text>
@@ -453,7 +354,7 @@ function Add() {
                             <SegmentedControl
                                 fullWidth
                                 data={selfStateMap}
-                                {...form.getInputProps('state')}
+                                {...form.getInputProps('selfState')}
                             />
                         </Grid.Col>
                         <Grid.Col span={6}>

@@ -1,9 +1,10 @@
-// Reverse Object Keys and Values 
-// Object.fromEntries(flipped);
-// or
-//Object.entries({ x: 1, y: 2 }).map(([key, value]) => [value, key]);
-export const flip = (data) => Object.fromEntries(
-    Object
-        .entries(data)
-        .map(([key, value]) => [value, key])
-);
+export function arrayToString(array) {
+    if (Array.isArray(array)) {
+        return array.map(item => item.trim()).join(", ");
+    }
+    return array;
+}
+
+export function isNumeric(value) {
+    return /^-?\d+$/.test(value);
+}

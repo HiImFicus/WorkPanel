@@ -42,6 +42,7 @@ const nonInitialModel = "non-initial";
 
 const cardModel = {
     "FirePro": {
+        "non-initial": [],
         "V": [
             "3900",
             "4900",
@@ -92,6 +93,7 @@ const cardModel = {
         ],
     },
     "Radeon": {
+        "non-initial": [],
         "X": [
             "550",
             "800 XL",
@@ -352,8 +354,8 @@ const memorySize = [
 ];
 
 const formFactor = [
-    "L-PROFILE",
-    "H-PROFILE",
+    "L - PROFILE",
+    "H - PROFILE",
 ];
 
 const ports = [
