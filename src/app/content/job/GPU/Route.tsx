@@ -1,10 +1,12 @@
-import Add from "./Add";
-import List from "./List";
-import Overview from "./Overview";
-import Setting from "./Setting";
+import Add from "./content/Add";
+import List from "./content/List";
+import Overview from "./content/Overview";
+import Setting from "./content/Setting";
+import Gpu from "./Gpu";
 
-const GPURoute = {
+const gpuRoute = {
 	path: "gpu",
+	element: <Gpu />,
 	children: [
 		{
 			path: "",
@@ -25,4 +27,4 @@ const GPURoute = {
 	],
 };
 
-export default GPURoute;
+export default gpuRoute;

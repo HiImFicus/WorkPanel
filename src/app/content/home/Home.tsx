@@ -4,8 +4,8 @@ import { Container, createStyles, Flex } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconGauge, IconHeartRateMonitor } from "@tabler/icons-react";
 
-import HeaderSearch from "../common/layouts/HeaderSearch";
-import NavbarNested from "../common/layouts/Navbar";
+import HeaderSearch from "../../common/layouts/HeaderSearch";
+import NavbarNested from "../../common/layouts/Navbar";
 
 const useStyles = createStyles((theme) => ({
 	content: {

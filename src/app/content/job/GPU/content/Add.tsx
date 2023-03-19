@@ -22,7 +22,7 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconTrash } from "@tabler/icons-react";
 
-import { gpuDB } from "./Database";
+// import { gpuDB } from "./database/Database";
 import {
 	addNewModel,
 	addNewPartNumber,
@@ -35,7 +35,7 @@ import {
 	stockSelfStateGood,
 	stockStatusInStock,
 	stockStatusOut,
-} from "./DBManager";
+} from "../database/DBManager";
 
 const selfStateMap = [
 	{ label: "still-working", value: stockSelfStateGood },

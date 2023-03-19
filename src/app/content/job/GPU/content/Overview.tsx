@@ -4,11 +4,11 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
 import { AgGridReact } from "ag-grid-react"; // the AG Grid React Component
 import { useLiveQuery } from "dexie-react-hooks";
 import Papa from "papaparse";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import { Accordion, Button, Group } from "@mantine/core";
 
-import { gpuDB } from "./Database";
+import { dataServiceContext } from "../database/dataserviceContext";
 
 //todo
 // const uniqueCardsList = [];
@@ -17,8 +17,8 @@ import { gpuDB } from "./Database";
 // const date = [];
 
 function Overview() {
-	// const [uniqueModelData, setUniqueModelData] = useState([]);
-	const stocks = useLiveQuery(() => gpuDB.table("stock").toArray());
+	const dataService = useContext(dataServiceContext);
+	const stocks = useLiveQuery(() => dataService?.getStocks() ?? []);
 
 	const allModels = stocks?.map((stock) => stock.model);
 	const totalReports = [

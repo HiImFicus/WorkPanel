@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { Button, createStyles, Grid, Text, Title } from "@mantine/core";
 
-import { gpuDB } from "./Database";
-import GPUDefaultData from "./DefaultData";
+// import { gpuDB } from "./database/Database";
+import GPUDefaultData from "../database/DefaultData";
 import ModelConfig from "./ModelConfig";
 import NameConfig from "./NameConfig";
 

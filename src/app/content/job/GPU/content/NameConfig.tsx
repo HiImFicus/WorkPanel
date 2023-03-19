@@ -14,7 +14,7 @@ import {
 	Title,
 } from "@mantine/core";
 
-import { gpuDB } from "./Database";
+// import { gpuDB } from "./database/Database";
 
 interface NameConfigProps {
 	tableName: string;

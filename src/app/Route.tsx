@@ -1,24 +1,17 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, RouteObject } from "react-router-dom";
 
-import ErrorPage from "./common/error/ErrorPage";
-import Home from "./content/Home";
-import GPURoute from "./content/job/GPU/Route";
-import Welcome from "./content/Welcome";
+import { route as homeRoute } from "./content/home/Route";
+import gpuRoute from "./content/job/gpu/Route";
 
-// todo navlink from here.
-const route = createBrowserRouter([
-	{
-		path: "/",
-		element: <Home />,
-		errorElement: <ErrorPage />,
-		children: [
-			{
-				path: "/",
-				element: <Welcome />,
-			},
-			GPURoute,
-		],
-	},
-]);
+function setupRoute(): RouteObject {
+	homeRoute.children.push(gpuRoute);
+	return homeRoute;
+}
+
+function getNavLink() {
+	// todo navlink from here.
+}
+
+const route = createBrowserRouter([setupRoute()]);
 
 export default route;

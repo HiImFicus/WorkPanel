@@ -1,7 +1,8 @@
 import { randomId } from "@mantine/hooks";
 
-import { arrayToString, isNumeric } from "../../../common/Helps";
-import { gpuDB } from "./Database";
+import { arrayToString, isNumeric } from "../../../../common/Helps";
+
+// import { gpuDB } from "./database/Database";
 
 // scheme:
 //     silicon: '++id, &name',

@@ -4,17 +4,20 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
 import { AgGridReact } from "ag-grid-react"; // the AG Grid React Component
 import { useLiveQuery } from "dexie-react-hooks";
 import Papa from "papaparse";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
 
 import { Button, FileButton, Group } from "@mantine/core";
 
-import { gpuDB } from "./Database";
-import { createStockByOldData } from "./DBManager";
+import { dataServiceContext } from "../database/dataserviceContext";
+// import { gpuDB } from "./database/Database";
+import { createStockByOldData } from "../database/DBManager";
 
 // import { useState } from 'react';
 
 function List() {
-	const stocks = useLiveQuery(() => gpuDB.stock.toArray());
+	const dataService = useContext(dataServiceContext);
+
+	const stocks = useLiveQuery(() => dataService?.getStocks() ?? []);
 
 	const gridRef = useRef(); // Optional - for accessing Grid's API
 	// Each Column Definition results in one Column.
@@ -34,9 +37,12 @@ function List() {
 
 	//todo learn
 	// DefaultColDef sets props common to all Columns
-	const defaultColDef = useMemo(() => ({
-		sortable: true,
-	}));
+	const defaultColDef = useMemo(
+		() => ({
+			sortable: true,
+		}),
+		[]
+	);
 
 	// Example of consuming Grid Event
 	const cellClickedListener = useCallback((event) => {
@@ -49,7 +55,7 @@ function List() {
 	// }, []);
 
 	const onBtnExport = useCallback(() => {
-		gridRef.current.api.exportDataAsCsv();
+		gridRef.current?.api.exportDataAsCsv();
 	}, []);
 
 	const onBtnImportCSV = useCallback((file) => {
