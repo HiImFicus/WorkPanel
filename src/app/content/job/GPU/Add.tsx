@@ -17,7 +17,7 @@ import {
 	Switch,
 	Text,
 } from "@mantine/core";
-import { DatePicker } from "@mantine/dates";
+import { DatePickerInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconTrash } from "@tabler/icons-react";
@@ -372,10 +372,9 @@ function Add() {
 					/>
 				</Grid.Col>
 				<Grid.Col span={6}>
-					<DatePicker
+					<DatePickerInput
 						placeholder="Pick date"
 						label="TEST DATE"
-						inputFormat="MM/DD/YYYY"
 						labelFormat="MM/YYYY"
 						{...form.getInputProps("date")}
 					/>
