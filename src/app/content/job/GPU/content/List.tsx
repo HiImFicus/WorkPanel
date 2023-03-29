@@ -1,64 +1,78 @@
-import "ag-grid-community/styles/ag-grid.css"; // Core grid CSS, always needed
-import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
-
-import { AgGridReact } from "ag-grid-react"; // the AG Grid React Component
 import { useLiveQuery } from "dexie-react-hooks";
+import csvDownload from "json-to-csv-export";
 import Papa from "papaparse";
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 
 import { Button, FileButton, Group } from "@mantine/core";
+import { IconFileExport, IconFileImport } from "@tabler/icons-react";
 
-import { dataServiceContext } from "../database/dataserviceContext";
-// import { gpuDB } from "./database/Database";
-import { createStockByOldData } from "../database/DBManager";
+import { ReactTable } from "../../../../common/data/ReactTable";
+import { getCurrentDate } from "../../../../common/Helps";
+import { dataServiceContext } from "../database/DataserviceContext";
 
-// import { useState } from 'react';
-
-function List() {
+const List: React.FC = () => {
 	const dataService = useContext(dataServiceContext);
+	const [disableExport, setDisableExport] = useState(true);
 
-	const stocks = useLiveQuery(() => dataService?.getStocks() ?? []);
+	const columns = [
+		{
+			Header: "ID",
+			accessor: "id",
+		},
+		{
+			Header: "silicon",
+			accessor: "silicon",
+		},
+		{
+			Header: "brand",
+			accessor: "brand",
+		},
+		{
+			Header: "model",
+			accessor: "model",
+		},
+		{
+			Header: "memory",
+			accessor: "memory",
+		},
+		{
+			Header: "formFactor",
+			accessor: "formFactor",
+		},
+		{
+			Header: "ports",
+			accessor: "ports",
+		},
+		{
+			Header: "partNumbers",
+			accessor: "partNumbers",
+		},
+		{
+			Header: "date",
+			accessor: "date",
+		},
+		{
+			Header: "state",
+			accessor: "state",
+		},
+		{
+			Header: "status",
+			accessor: "status",
+		},
+		{
+			Header: "defect",
+			accessor: "defect",
+		},
+	];
 
-	const gridRef = useRef(); // Optional - for accessing Grid's API
-	// Each Column Definition results in one Column.
-	const [columnDefs, setColumnDefs] = useState([
-		{ field: "silicon", filter: true },
-		{ field: "brand", filter: true },
-		{ field: "model", filter: true },
-		{ field: "memory", filter: true },
-		{ field: "formFactor" },
-		{ field: "ports", filter: true },
-		{ field: "partNumbers", filter: true },
-		{ field: "date", filter: true },
-		{ field: "selfState", filter: true },
-		{ field: "status", filter: true },
-		{ field: "defect" },
-	]);
-
-	//todo learn
-	// DefaultColDef sets props common to all Columns
-	const defaultColDef = useMemo(
-		() => ({
-			sortable: true,
-		}),
-		[]
-	);
-
-	// Example of consuming Grid Event
-	const cellClickedListener = useCallback((event) => {
-		console.log("cellClicked", event);
+	const data = useLiveQuery(() => {
+		return dataService?.getStocks().then((result) => {
+			setDisableExport(false);
+			return result;
+		});
 	}, []);
 
-	// Example using Grid's API
-	// const buttonListener = useCallback(e => {
-	//     gridRef.current.api.deselectAll();
-	// }, []);
-
-	const onBtnExport = useCallback(() => {
-		gridRef.current?.api.exportDataAsCsv();
-	}, []);
-
-	const onBtnImportCSV = useCallback((file) => {
+	const onBtnImportCSV = useCallback((file: any) => {
 		if (file) {
 			Papa.LocalChunkSize = 1024;
 			Papa.parse(file, {
@@ -68,7 +82,7 @@ function List() {
 					parser.pause();
 					//todo use queue to bulk add recod by chunk.
 					// console.log("Row parse data:", results.data.map(everyRow => createStockByOldData(everyRow)));
-					createStockByOldData(results.data);
+					// createStockByOldData(results.data);
 					// parser.abort()
 					parser.resume();
 				},
@@ -79,32 +93,42 @@ function List() {
 		}
 	}, []);
 
+	function getExportMetaData() {
+		return {
+			data: data ?? [],
+			filename: "GPU_list_" + getCurrentDate(),
+			delimiter: ",",
+		};
+	}
+
 	return (
 		<>
-			<div>
-				{/* Example using Grid's API */}
-				<Button onClick={onBtnExport}>Download CSV export file</Button>
-				<Group position="center">
-					<FileButton onChange={onBtnImportCSV} accept=".csv">
-						{(props) => <Button {...props}>Import Stocks from CSV file</Button>}
-					</FileButton>
-				</Group>
-
-				{/* On div wrapping Grid a) specify theme CSS Class Class and b) sets Grid size */}
-				<div className="ag-theme-alpine" style={{ width: 1000, height: 500 }}>
-					<AgGridReact
-						ref={gridRef} // Ref for accessing Grid's API
-						rowData={stocks} // Row Data for Rows
-						columnDefs={columnDefs} // Column Defs for Columns
-						defaultColDef={defaultColDef} // Default Column Properties
-						animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-						rowSelection="multiple" // Options - allows click selection of rows
-						onCellClicked={cellClickedListener} // Optional - registering for Grid Event
-					/>
-				</div>
-			</div>
+			<Group position="center" sx={{ padding: 15 }}>
+				<Button
+					leftIcon={<IconFileExport size="1rem" />}
+					variant="gradient"
+					gradient={{ from: "orange", to: "red" }}
+					disabled={disableExport}
+					onClick={() => csvDownload(getExportMetaData())}
+				>
+					Export Data
+				</Button>
+				<FileButton onChange={onBtnImportCSV} accept=".csv">
+					{(props) => (
+						<Button
+							{...props}
+							leftIcon={<IconFileImport size="1rem" />}
+							variant="gradient"
+							gradient={{ from: "indigo", to: "cyan" }}
+						>
+							Import Stocks from CSV file
+						</Button>
+					)}
+				</FileButton>
+			</Group>
+			<ReactTable data={data ?? []} column={columns} />
 		</>
 	);
-}
+};
 
 export default List;

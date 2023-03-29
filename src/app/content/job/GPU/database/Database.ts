@@ -169,12 +169,12 @@ export type partNumber = {
 	name: string;
 };
 
-export type model = {
+export type Model = {
 	name: string;
 	silicon: string;
 };
 
-export type record = {
+export type Record = {
 	silicon: string;
 	brand: string;
 	model: string;
@@ -184,7 +184,7 @@ export type record = {
 	partNumbers: string;
 };
 
-export type stock = {
+export type Stock = {
 	silicon: string;
 	brand: string;
 	model: string;

@@ -3,12 +3,12 @@ import {
 	formFactor,
 	makerBrand,
 	memorySize,
-	model,
+	Model,
 	partNumber,
 	port,
-	record,
+	Record,
 	silicon,
-	stock,
+	Stock,
 } from "./Database";
 
 class DatabaseServie {
@@ -61,15 +61,15 @@ class DatabaseServie {
 	}
 
 	//* model
-	async addModel(model: model) {
+	async addModel(model: Model) {
 		return await this.database.getModelTable().add(model);
 	}
 
-	async bulkAddModel(models: model[]) {
+	async bulkAddModel(models: Model[]) {
 		return await this.database.getModelTable().bulkAdd(models);
 	}
 
-	async updateModel(id: number, model: model) {
+	async updateModel(id: number, model: Model) {
 		return await this.database.getModelTable().update(id, model);
 	}
 
@@ -166,15 +166,15 @@ class DatabaseServie {
 	}
 
 	//* Record
-	async addRecord(record: record) {
+	async addRecord(record: Record) {
 		return await this.database.getRecordTable().add(record);
 	}
 
-	async bulkAddRecord(records: record[]) {
+	async bulkAddRecord(records: Record[]) {
 		return await this.database.getRecordTable().bulkAdd(records);
 	}
 
-	async updateRecord(id: number, record: record) {
+	async updateRecord(id: number, record: Record) {
 		return await this.database.getRecordTable().update(id, record);
 	}
 
@@ -187,15 +187,15 @@ class DatabaseServie {
 	}
 
 	//* Stock
-	async addStock(stock: stock) {
+	async addStock(stock: Stock) {
 		return await this.database.getStockTable().add(stock);
 	}
 
-	async bulkAddStock(stocks: stock[]) {
+	async bulkAddStock(stocks: Stock[]) {
 		return await this.database.getStockTable().bulkAdd(stocks);
 	}
 
-	async updateStock(id: number, stock: stock) {
+	async updateStock(id: number, stock: Stock) {
 		return await this.database.getStockTable().update(id, stock);
 	}
 
@@ -205,6 +205,14 @@ class DatabaseServie {
 
 	async getStocks() {
 		return await this.database.getStockTable().toArray();
+	}
+
+	async getStocksByWhere(where: string, values: string) {
+		return await this.database
+			.getStockTable()
+			.where(where)
+			.startsWithIgnoreCase(values)
+			.toArray();
 	}
 }
 

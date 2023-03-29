@@ -375,7 +375,6 @@ function Add() {
 					<DatePickerInput
 						placeholder="Pick date"
 						label="TEST DATE"
-						labelFormat="MM/YYYY"
 						{...form.getInputProps("date")}
 					/>
 				</Grid.Col>

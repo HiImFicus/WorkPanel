@@ -12,3 +12,20 @@ export function isNumeric(value: string) {
 export const isObjectEmpty = (object: Object) => {
 	return Object.keys(object).length === 0 && object.constructor === Object;
 };
+
+export function getCurrentDate(separator = "-") {
+	let newDate = new Date();
+	let date = newDate.getDate();
+	let month = newDate.getMonth() + 1;
+	let year = newDate.getFullYear();
+	let time =
+		newDate.getHours() +
+		separator +
+		newDate.getMinutes() +
+		separator +
+		newDate.getSeconds();
+
+	return `${
+		month < 10 ? `0${month}` : `${month}`
+	}${separator}${date}${separator}${year}${separator}${time}`;
+}

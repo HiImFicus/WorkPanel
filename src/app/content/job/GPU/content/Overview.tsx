@@ -8,7 +8,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 
 import { Accordion, Button, Group } from "@mantine/core";
 
-import { dataServiceContext } from "../database/dataserviceContext";
+import { dataServiceContext } from "../database/DataserviceContext";
 
 //todo
 // const uniqueCardsList = [];
