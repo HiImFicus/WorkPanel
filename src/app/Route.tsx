@@ -1,17 +1,43 @@
-import { createBrowserRouter, RouteObject } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
-import { route as homeRoute } from "./content/home/Route";
-import gpuRoute from "./content/job/gpu/Route";
-
-function setupRoute(): RouteObject {
-	homeRoute.children.push(gpuRoute);
-	return homeRoute;
-}
+import ErrorPage from "./common/error/ErrorPage";
+import Welcome from "./content/home/content/Welcome";
+import Home from "./content/home/Home";
+import Add from "./content/job/gpu/content/Add";
+import List from "./content/job/gpu/content/List";
+import Overview from "./content/job/gpu/content/Overview";
+import Setting from "./content/job/gpu/content/Setting";
+import Update from "./content/job/gpu/content/Update";
+import Gpu from "./content/job/gpu/Gpu";
 
 function getNavLink() {
 	// todo navlink from here.
 }
 
-const route = createBrowserRouter([setupRoute()]);
+const router = createBrowserRouter([
+	{
+		path: "/",
+		element: <Home />,
+		errorElement: <ErrorPage />,
+		children: [
+			{
+				path: "",
+				index: true,
+				element: <Welcome />,
+			},
+			{
+				path: "gpu",
+				element: <Gpu />,
+				children: [
+					{ path: "", element: <Overview /> },
+					{ path: "setting", element: <Setting /> },
+					{ path: "add", element: <Add /> },
+					{ path: "list", element: <List /> },
+					{ path: ":id", element: <Update /> },
+				],
+			},
+		],
+	},
+]);
 
-export default route;
+export default router;

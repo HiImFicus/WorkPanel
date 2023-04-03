@@ -1,6 +1,6 @@
 export function arrayToString(array: Array<any>) {
 	if (Array.isArray(array)) {
-		return array.map((item) => item.trim()).join(", ");
+		return array.map((item) => item.trim()).join(",");
 	}
 	return array;
 }
@@ -28,4 +28,15 @@ export function getCurrentDate(separator = "-") {
 	return `${
 		month < 10 ? `0${month}` : `${month}`
 	}${separator}${date}${separator}${year}${separator}${time}`;
+}
+
+export function getDateString(date: Date) {
+	return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+}
+
+export function stringArrayTrimValueToString(orignal: string) {
+	return orignal
+		.split(",")
+		.map((value: string) => value.trim())
+		.join(",");
 }

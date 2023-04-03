@@ -7,7 +7,7 @@ import {
 	MantineProvider,
 } from "@mantine/core";
 
-import route from "./Route";
+import router from "./Route";
 
 export default function App() {
 	const [colorScheme, setColorScheme] = useState<ColorScheme>("light");
@@ -24,7 +24,7 @@ export default function App() {
 				withNormalizeCSS
 				theme={{ colorScheme }}
 			>
-				<RouterProvider router={route} />
+				<RouterProvider router={router} />
 			</MantineProvider>
 		</ColorSchemeProvider>
 	);

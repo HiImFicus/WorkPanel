@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import csvDownload from "json-to-csv-export";
 import Papa from "papaparse";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import {
 	Button,
@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 
 // import { gpuDB } from "./database/Database";
+import { dataServiceContext } from "../database/DataserviceContext";
 
 interface NameConfigProps {
 	tableName: string;
@@ -22,24 +23,26 @@ interface NameConfigProps {
 }
 
 function NameConfig({ tableName, label }: NameConfigProps) {
-	const table = gpuDB.table(tableName);
+	const dataService = useContext(dataServiceContext);
+
+	const table = dataService?.getDatabase().instance.table(tableName);
 	const [value, setValue] = useState("");
 	const [error, setError] = useState(null);
-	const data = useLiveQuery(() => table.toArray());
+	const data = useLiveQuery(() => table?.toArray());
 
 	async function addValueToDB() {
 		try {
 			if (value?.trim() === "") return;
 			//check duplicate
-			const count = await table.where("name").equalsIgnoreCase(value).count();
+			const count = await table?.where("name").equalsIgnoreCase(value).count();
 			if (count) return;
 
-			await table.add({
+			await table?.add({
 				name: value,
 			});
 			setError(null);
 			console.log("Success saved!");
-		} catch (error) {
+		} catch (error: any) {
 			setError(error.inner.message);
 		}
 	}
@@ -47,7 +50,7 @@ function NameConfig({ tableName, label }: NameConfigProps) {
 	async function clearTable() {
 		try {
 			if (data?.length) {
-				await table.clear();
+				await table?.clear();
 				console.log("Success cleared!");
 			}
 		} catch (error) {
@@ -73,23 +76,23 @@ function NameConfig({ tableName, label }: NameConfigProps) {
 
 	function handleFile(file: File) {
 		if (file) {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				complete: async function (results) {
-					await gpuDB.transaction("rw", [table], async () => {
-						await table.clear();
-						await table.bulkAdd(results.data);
-					});
-				},
-			});
+			// Papa.parse(file, {
+			// 	header: true,
+			// 	skipEmptyLines: true,
+			// 	complete: async function (results) {
+			// 		await gpuDB.transaction("rw", [table], async () => {
+			// 			await table.clear();
+			// 			await table.bulkAdd(results.data);
+			// 		});
+			// 	},
+			// });
 		}
 	}
 
 	async function deleteOne(id?: number) {
 		try {
 			if (id) {
-				await table.delete(id);
+				await table?.delete(id);
 				console.log("Success deleted!");
 			}
 		} catch (error) {

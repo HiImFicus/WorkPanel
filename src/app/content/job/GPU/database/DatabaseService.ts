@@ -1,14 +1,17 @@
+import Dexie, { DexieError } from "dexie";
+
 import {
 	Database,
-	formFactor,
-	makerBrand,
-	memorySize,
+	FormFactor,
+	MakerBrand,
+	MemorySize,
 	Model,
-	partNumber,
-	port,
+	PartNumber,
+	Port,
 	Record,
-	silicon,
+	Silicon,
 	Stock,
+	stockSamePortsMultipleSymbolExpress,
 } from "./Database";
 
 class DatabaseServie {
@@ -18,16 +21,32 @@ class DatabaseServie {
 		this.database = new Database();
 	}
 
-	//* silicon
-	async addSilicon(silison: silicon) {
-		return await this.database.getSilisonTable().add(silison);
+	getDatabase() {
+		return this.database;
 	}
 
-	async bulkAddSilicon(silisons: silicon[]) {
+	bulkAdd(table: string, data: any): void {
+		this.database.instance.table(table).bulkAdd(data);
+	}
+
+	clearTable(table: string): void {
+		this.database.instance.table(table).clear();
+	}
+
+	clearAll() {
+		this.database.clearAllTables();
+	}
+
+	//* silicon
+	addSilicon(silison: Silicon) {
+		return this.database.getSilisonTable().add(silison);
+	}
+
+	async bulkAddSilicon(silisons: Silicon[]) {
 		return await this.database.getSilisonTable().bulkAdd(silisons);
 	}
 
-	async updateSilicon(id: number, silicon: silicon) {
+	async updateSilicon(id: number, silicon: Silicon) {
 		return await this.database.getSilisonTable().update(id, silicon);
 	}
 
@@ -40,15 +59,15 @@ class DatabaseServie {
 	}
 
 	//* brand
-	async addBrand(brnad: makerBrand) {
-		return await this.database.getMakerBrandTable().add(brnad);
+	addBrand(brnad: MakerBrand) {
+		return this.database.getMakerBrandTable().add(brnad);
 	}
 
-	async bulkAddBrand(brnad: makerBrand[]) {
+	async bulkAddBrand(brnad: MakerBrand[]) {
 		return await this.database.getMakerBrandTable().bulkAdd(brnad);
 	}
 
-	async updateBrand(id: number, brnad: makerBrand) {
+	async updateBrand(id: number, brnad: MakerBrand) {
 		return await this.database.getMakerBrandTable().update(id, brnad);
 	}
 
@@ -62,7 +81,7 @@ class DatabaseServie {
 
 	//* model
 	async addModel(model: Model) {
-		return await this.database.getModelTable().add(model);
+		return this.database.getModelTable().add(model);
 	}
 
 	async bulkAddModel(models: Model[]) {
@@ -81,16 +100,36 @@ class DatabaseServie {
 		return await this.database.getModelTable().toArray();
 	}
 
-	//* memorySize
-	async addMemorySize(memorySize: memorySize) {
-		return await this.database.getMemorySizeTable().add(memorySize);
+	async getModelByName(modelName: string): Promise<Model> {
+		return await this.database
+			.getModelTable()
+			.where("name")
+			.equalsIgnoreCase(modelName)
+			.first();
 	}
 
-	async bulkAddMemorySize(memorySizes: memorySize[]) {
+	parseModelFromString(string: string) {
+		const parseArray = string.split(":");
+		if (parseArray.length === 2) {
+			const modelName = parseArray[1].trim();
+			const silicon = parseArray[0].trim();
+
+			return { name: modelName, silicon: silicon };
+		}
+
+		return null;
+	}
+
+	//* memorySize
+	async addMemorySize(memorySize: MemorySize) {
+		return this.database.getMemorySizeTable().add(memorySize);
+	}
+
+	async bulkAddMemorySize(memorySizes: MemorySize[]) {
 		return await this.database.getMemorySizeTable().bulkAdd(memorySizes);
 	}
 
-	async updateMemorySize(id: number, memorySize: memorySize) {
+	async updateMemorySize(id: number, memorySize: MemorySize) {
 		return await this.database.getMemorySizeTable().update(id, memorySize);
 	}
 
@@ -103,15 +142,15 @@ class DatabaseServie {
 	}
 
 	//* FormFactor
-	async addFormFactor(formFactor: formFactor) {
-		return await this.database.getFormFactorTable().add(formFactor);
+	async addFormFactor(formFactor: FormFactor) {
+		return this.database.getFormFactorTable().add(formFactor);
 	}
 
-	async bulkAddFormFactor(formFactors: formFactor[]) {
+	async bulkAddFormFactor(formFactors: FormFactor[]) {
 		return await this.database.getFormFactorTable().bulkAdd(formFactors);
 	}
 
-	async updateFormFactor(id: number, formFactor: formFactor) {
+	async updateFormFactor(id: number, formFactor: FormFactor) {
 		return await this.database.getFormFactorTable().update(id, formFactor);
 	}
 
@@ -124,15 +163,15 @@ class DatabaseServie {
 	}
 
 	//* Port
-	async addPort(port: port) {
-		return await this.database.getPortTable().add(port);
+	async addPort(port: Port) {
+		return this.database.getPortTable().add(port);
 	}
 
-	async bulkAddPort(ports: port[]) {
+	async bulkAddPort(ports: Port[]) {
 		return await this.database.getPortTable().bulkAdd(ports);
 	}
 
-	async updatePort(id: number, port: port) {
+	async updatePort(id: number, port: Port) {
 		return await this.database.getPortTable().update(id, port);
 	}
 
@@ -145,15 +184,15 @@ class DatabaseServie {
 	}
 
 	//* PartNumber
-	async addPartNumber(partNumber: partNumber) {
-		return await this.database.getPartNumberTable().add(partNumber);
+	async addPartNumber(partNumber: PartNumber) {
+		return this.database.getPartNumberTable().add(partNumber);
 	}
 
-	async bulkAddPartNumber(partNumbers: partNumber[]) {
+	async bulkAddPartNumber(partNumbers: PartNumber[]) {
 		return await this.database.getPartNumberTable().bulkAdd(partNumbers);
 	}
 
-	async updatePartNumber(id: number, partNumber: partNumber) {
+	async updatePartNumber(id: number, partNumber: PartNumber) {
 		return await this.database.getPartNumberTable().update(id, partNumber);
 	}
 
@@ -167,7 +206,7 @@ class DatabaseServie {
 
 	//* Record
 	async addRecord(record: Record) {
-		return await this.database.getRecordTable().add(record);
+		return this.database.getRecordTable().add(record);
 	}
 
 	async bulkAddRecord(records: Record[]) {
@@ -191,11 +230,92 @@ class DatabaseServie {
 		return await this.database.getStockTable().add(stock);
 	}
 
+	async stockSaveFromAdd(stockData: any) {
+		const newStock = this.database.createStockFromForm(stockData);
+
+		const record = this.database.createRecordByData(newStock);
+		this.addRecord(record).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "record")
+		);
+
+		return this.addStock(newStock);
+	}
+
+	async bulkAddStockFromImport(stocksData: any[]) {
+		const stocks = stocksData.map((every) => {
+			const stock = this.database.createStockFromFile(every);
+			this.saveRecordAndSettingData(stock);
+			return stock;
+		});
+
+		await this.bulkAddStock(stocks).then(function (lastKey) {
+			console.log(`Added ${lastKey} stocks.`);
+		});
+	}
+
+	hanldeDuplicateDataIntertError(error: DexieError, dataName: string): null {
+		if (error.name === "ConstraintError") {
+			//log console.log(`Duplicate ${dataName} insertion has been prevented`);
+		} else {
+			throw error;
+		}
+
+		return null;
+	}
+
+	saveRecordAndSettingData(stock: Stock) {
+		const record = this.database.createRecordByData(stock);
+		this.addRecord(record).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "record")
+		);
+
+		this.addSilicon({ name: stock.silicon }).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "silicon")
+		);
+
+		this.addBrand({ name: stock.brand }).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "brand")
+		);
+
+		this.addModel({ name: stock.model, silicon: stock.silicon }).catch(
+			(reason) => this.hanldeDuplicateDataIntertError(reason, "model")
+		);
+
+		this.addMemorySize({ name: stock.memory }).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "memory size")
+		);
+
+		this.addFormFactor({ name: stock.formFactor }).catch((reason) =>
+			this.hanldeDuplicateDataIntertError(reason, "form factor")
+		);
+
+		if (stock.ports) {
+			stock.ports.split(",").map((everyPort) => {
+				let port = everyPort;
+				if (everyPort.includes(stockSamePortsMultipleSymbolExpress)) {
+					port = everyPort.split(stockSamePortsMultipleSymbolExpress)[1];
+				}
+				this.addPort({ name: port }).catch((reason) =>
+					this.hanldeDuplicateDataIntertError(reason, "port")
+				);
+			});
+		}
+
+		if (stock.partNumbers) {
+			stock.partNumbers.split(",").map((everyPartNumber) => {
+				this.addPartNumber({ name: everyPartNumber }).catch((reason) =>
+					this.hanldeDuplicateDataIntertError(reason, "partNumber")
+				);
+			});
+		}
+	}
+
 	async bulkAddStock(stocks: Stock[]) {
 		return await this.database.getStockTable().bulkAdd(stocks);
 	}
 
-	async updateStock(id: number, stock: Stock) {
+	async updateStock(id: number, data: any) {
+		const stock = this.database.createStockFromForm(data);
 		return await this.database.getStockTable().update(id, stock);
 	}
 
@@ -203,15 +323,37 @@ class DatabaseServie {
 		return await this.database.getStockTable().delete(id);
 	}
 
+	// async getStocks() {
+	// 	const sortedData = await this.database
+	// 		.getStockTable()
+	// 		.orderBy("id")
+	// 		.toArray();
+	// 	sortedData.sort((a, b) => Number(a.id) - Number(b.id));
+	// 	return sortedData;
+	// }
+
 	async getStocks() {
 		return await this.database.getStockTable().toArray();
 	}
 
-	async getStocksByWhere(where: string, values: string) {
+	async getStocksByWhere(where: string, value: string) {
 		return await this.database
 			.getStockTable()
 			.where(where)
-			.startsWithIgnoreCase(values)
+			.equalsIgnoreCase(value)
+			.toArray();
+	}
+
+	async getStocksById(id: number) {
+		return await this.database.getStockTable().where("id").equals(id).first();
+	}
+
+	async getLastThreeStocks() {
+		return await this.database
+			.getStockTable()
+			.orderBy("id")
+			.reverse()
+			.limit(3)
 			.toArray();
 	}
 }

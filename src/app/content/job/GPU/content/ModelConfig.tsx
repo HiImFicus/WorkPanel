@@ -1,7 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import csvDownload from "json-to-csv-export";
 import Papa from "papaparse";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import {
 	Button,
@@ -17,15 +17,20 @@ import {
 } from "@mantine/core";
 
 // import { gpuDB } from "./database/Database";
+import { dataServiceContext } from "../database/DataserviceContext";
 
 interface ModelConfigProps {
 	tableName: string;
-	dependTableName: string;
+	dependTableName?: string;
 	label: string;
 }
 
 function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
-	const dependTable = gpuDB.table(dependTableName);
+	const dataService = useContext(dataServiceContext);
+
+	const dependTable = dataService
+		?.getDatabase()
+		.instance.table(dependTableName);
 	const [selectData, setSelectData] = useState<
 		{ value: string; label: string }[]
 	>([]);
@@ -33,13 +38,13 @@ function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
 
 	useEffect(() => {
 		async function getDependData() {
-			return await dependTable.toArray();
+			return await dependTable?.toArray();
 		}
 		getDependData()
 			.then((result) => {
 				let currentValue: string[] = [];
 				let newData: { value: string; label: string }[] = [];
-				result.map(
+				result?.map(
 					(element) => {
 						if (!currentValue.includes(element.name)) {
 							currentValue.push(element.name);
@@ -62,8 +67,8 @@ function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
 		};
 	}, []);
 
-	const table = gpuDB.table(tableName);
-	const data = useLiveQuery(async () => table.toArray());
+	const table = dataService?.getDatabase().instance.table(tableName);
+	const data = useLiveQuery(async () => table?.toArray());
 	const [value, setValue] = useState("");
 	const [dependValue, setDependValue] = useState("");
 
@@ -72,14 +77,14 @@ function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
 			if (value?.trim() === "" || dependValue?.trim() === "") return;
 			//check duplicate
 			const count = await table
-				.where(`[name+${dependTableName}]`)
+				?.where(`[name+${dependTableName}]`)
 				.equals([value, dependValue])
 				.count();
 			if (count) return;
 
 			let newData = { name: value };
 			(newData as any)[dependTableName] = dependValue;
-			await table.add(newData);
+			await table?.add(newData);
 			console.log("Success saved!");
 		} catch (error) {
 			throw error;
@@ -89,7 +94,7 @@ function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
 	async function clearTable() {
 		try {
 			if (data?.length) {
-				await table.clear();
+				await table?.clear();
 				console.log("Success cleared!");
 			}
 		} catch (error) {
@@ -115,23 +120,23 @@ function ModelConfig({ dependTableName, tableName, label }: ModelConfigProps) {
 
 	function handleFile(file: File) {
 		if (file) {
-			Papa.parse(file, {
-				header: true,
-				skipEmptyLines: true,
-				complete: async function (results) {
-					await gpuDB.transaction("rw", [table], async () => {
-						await table.clear();
-						await table.bulkAdd(results.data);
-					});
-				},
-			});
+			// Papa.parse(file, {
+			// 	header: true,
+			// 	skipEmptyLines: true,
+			// 	complete: async function (results) {
+			// 		await gpuDB.transaction("rw", [table], async () => {
+			// 			await table.clear();
+			// 			await table.bulkAdd(results.data);
+			// 		});
+			// 	},
+			// });
 		}
 	}
 
 	async function deleteOne(id?: number) {
 		try {
 			if (id) {
-				await table.delete(id);
+				await table?.delete(id);
 				console.log("Success deleted!");
 			}
 		} catch (error) {

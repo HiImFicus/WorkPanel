@@ -1,20 +1,49 @@
 import Dexie, { Table } from "dexie";
 
-// const gpuDB = new Dexie("GPUWork");
-// gpuDB.version(1).stores({
-// 	silicon: "++id, &name",
-// 	makerBrand: "++id, &name",
-// 	model: "++id, &name, silicon",
-// 	memorySize: "++id, &name",
-// 	formFactor: "++id, &name",
-// 	port: "++id, &name",
-// 	partNumber: "++id, &name",
-// 	record: "++id, &[silicon+brand+model+memory+formFactor+ports+partNumbers]",
-// 	stock:
-// 		"++id, silicon, brand, model, memory, formFactor, ports, partNumbers, date, selfState, status, defect",
-// });
+import {
+	arrayToString,
+	getDateString,
+	stringArrayTrimValueToString,
+} from "../../../../common/Helps";
 
 //clear every table when refresh
+
+const stockFieldsFromFile = [
+	"id",
+	"silicon",
+	"brand",
+	"model",
+	"memory",
+	"formFactor",
+	"ports",
+	"partNumbers",
+	"date",
+	"state",
+	"status",
+	"defect",
+];
+const stockFieldsRunTime = [
+	"silicon",
+	"brand",
+	"model",
+	"memory",
+	"formFactor",
+	"ports",
+	"partNumbers",
+	"date",
+	"state",
+	"status",
+	"defect",
+];
+const recordFields = [
+	"silicon",
+	"brand",
+	"model",
+	"memory",
+	"formFactor",
+	"ports",
+	"partNumbers",
+];
 
 interface databaseScheme {
 	[tableName: string]: string;
@@ -94,6 +123,66 @@ class Database {
 		return scheme;
 	}
 
+	createStockFromFile(data: any): Stock {
+		let newStock: any = {};
+		stockFieldsFromFile.map((field) => {
+			if (field === "ports" || field === "partNumbers") {
+				newStock[field] = stringArrayTrimValueToString(data[field]);
+			} else if (field === "state" && !newStock["state"] && data["selfState"]) {
+				//* Compatible with old data
+				if (data["selfState"] != stockSelfStateBad) {
+					newStock["state"] = stockSelfStateGood;
+				} else {
+					newStock["state"] = data["selfState"];
+				}
+			} else if (field === "status") {
+				newStock[field] = data["status"].toLowerCase();
+			} else if (field === "defect") {
+				newStock[field] = stringArrayTrimValueToString(
+					data[field]
+				).toLowerCase();
+			} else if (field === "id") {
+				newStock[field] = Number(data[field]);
+			} else {
+				newStock[field] = data[field];
+			}
+		}, data);
+
+		return newStock;
+	}
+
+	createStockFromForm(data: any): Stock {
+		let newStock: any = {};
+		stockFieldsRunTime.map((field) => {
+			newStock[field] = data[field];
+		}, data);
+
+		if (newStock.date instanceof Date) {
+			newStock.date = getDateString(newStock.date);
+		}
+		if (Array.isArray(newStock.defect)) {
+			newStock.defect = arrayToString(newStock.defect);
+		}
+
+		if (Array.isArray(newStock.ports)) {
+			newStock.ports = this.parsePortsObjectToString(newStock.ports);
+		}
+		if (Array.isArray(newStock.partNumbers)) {
+			newStock.partNumbers = arrayToString(newStock.partNumbers);
+		}
+
+		return newStock;
+	}
+
+	createRecordByData(data: any): Record {
+		let record: any = {};
+		recordFields.map((field) => {
+			record[field] = data[field];
+		}, data);
+
+		return record;
+	}
+
 	// db.isOpen
 	// db.open
 	// db.close
@@ -141,31 +230,58 @@ class Database {
 	getStockTable(): Table {
 		return this.instance.table("stock");
 	}
+
+	parsePortsObjectToString(portsObject: any[]) {
+		let ports: any = {};
+		portsObject.map((port) => {
+			if (port.type) {
+				// return `${port.type}: ${port.active}`;
+				if (ports[port.type]) {
+					ports[port.type] = ports[port.type] + 1;
+				} else {
+					ports[port.type] = 1;
+				}
+			}
+		});
+
+		let portsArray = [];
+		for (const port in ports) {
+			if (Object.hasOwnProperty.call(ports, port)) {
+				if (ports[port] < 2) {
+					portsArray.push(port);
+				} else {
+					portsArray.push(`${ports[port]} x ${port}`);
+				}
+			}
+		}
+
+		return portsArray.join(",");
+	}
 }
 
 export { Database };
 
-export type silicon = {
+export type Silicon = {
 	name: string;
 };
 
-export type makerBrand = {
+export type MakerBrand = {
 	name: string;
 };
 
-export type memorySize = {
+export type MemorySize = {
 	name: string;
 };
 
-export type formFactor = {
+export type FormFactor = {
 	name: string;
 };
 
-export type port = {
+export type Port = {
 	name: string;
 };
 
-export type partNumber = {
+export type PartNumber = {
 	name: string;
 };
 
@@ -197,3 +313,16 @@ export type Stock = {
 	status: string;
 	defect: string;
 };
+
+export const stockSelfStateGood = "working";
+export const stockSelfStateBad = "broken";
+export const stockStatusInStock = "in";
+export const stockStatusOut = "out";
+export const stockSamePortsMultipleSymbol = "x";
+export const stockSamePortsMultipleSymbolExpress = ` ${stockSamePortsMultipleSymbol} `;
+export const stockDefectMap = [
+	{ value: "bad port", label: "Bad Port" },
+	{ value: "bad fan", label: "Bad Fan" },
+	{ value: "noisy fan", label: "Noisy Fan" },
+	{ value: "no profile", label: "No Profile" },
+];

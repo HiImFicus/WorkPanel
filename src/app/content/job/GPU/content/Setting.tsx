@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import { Button, createStyles, Grid, Text, Title } from "@mantine/core";
 
-// import { gpuDB } from "./database/Database";
+import { dataServiceContext } from "../database/DataserviceContext";
 import GPUDefaultData from "../database/DefaultData";
 import ModelConfig from "./ModelConfig";
 import NameConfig from "./NameConfig";
@@ -65,22 +65,30 @@ const configListMap = [
 function Setting() {
 	const { classes } = useStyles();
 	const [hasDefault, setHasDefault] = useState(false);
+	const dataService = useContext(dataServiceContext);
 
 	//change model table data.
 	function setDefaultData() {
-		clearAll();
+		clearAllSetting();
 		const data = GPUDefaultData();
 		console.log(data);
 		for (const key in data) {
 			if (Object.hasOwnProperty.call(data, key)) {
-				gpuDB[key].bulkAdd(data[key]);
+				dataService?.bulkAdd(key, data[key]);
 			}
 		}
 		setHasDefault(true);
 	}
 
+	function clearAllSetting() {
+		configTableMap.map((table) => {
+			dataService?.clearTable(table);
+		});
+		setHasDefault(false);
+	}
+
 	function clearAll() {
-		configTableMap.map((table) => gpuDB[table].clear());
+		dataService?.clearAll();
 		setHasDefault(false);
 	}
 
@@ -102,7 +110,10 @@ function Setting() {
 								Set Default Data
 							</Button>
 						)}
-						<Button onClick={clearAll} color="dark">
+						<Button onClick={clearAllSetting} color="dark">
+							Clear All Setting Data
+						</Button>
+						<Button onClick={clearAll} color="red">
 							Clear All Data
 						</Button>
 					</Button.Group>

@@ -3,11 +3,17 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
 
 import { AgGridReact } from "ag-grid-react"; // the AG Grid React Component
 import { useLiveQuery } from "dexie-react-hooks";
+import csvDownload from "json-to-csv-export";
 import Papa from "papaparse";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 
 import { Accordion, Button, Group } from "@mantine/core";
 
+import {
+	Stock,
+	stockSelfStateBad,
+	stockSelfStateGood,
+} from "../database/Database";
 import { dataServiceContext } from "../database/DataserviceContext";
 
 //todo
@@ -18,51 +24,71 @@ import { dataServiceContext } from "../database/DataserviceContext";
 
 function Overview() {
 	const dataService = useContext(dataServiceContext);
-	const stocks = useLiveQuery(() => dataService?.getStocks() ?? []);
+	const [reportUrl, setReportUrl] = useState("");
+	const [disableExport, setDisableExport] = useState(true);
+
+	const stocks = useLiveQuery(() => dataService?.getStocks());
 
 	const allModels = stocks?.map((stock) => stock.model);
+	const uniqueModel = allModels?.filter(
+		(item, index) => allModels.indexOf(item) === index
+	);
+	const allPartNumbers = stocks
+		?.map((stock: Stock) => stock.partNumbers.split(","))
+		.flatMap((e) => e);
+	const uniquePartNumbers = allPartNumbers?.filter(
+		(item, index) => item && allPartNumbers.indexOf(item) === index
+	);
+
 	const totalReports = [
 		{
 			total: stocks?.length,
-			canWork: stocks?.filter((stock) => stock.selfState === "still-work")
+			working: stocks?.filter((stock) => stock.state === stockSelfStateGood)
 				.length,
-			broken: stocks?.filter((stock) => stock.selfState === "broken").length,
+			broken: stocks?.filter((stock) => stock.state === stockSelfStateBad)
+				.length,
 			inStock: stocks?.filter(
-				(stock) => stock.status === "in" && stock.selfState === "still-work"
+				(stock) => stock.status === "in" && stock.state === stockSelfStateGood
 			).length,
-			out: stocks?.filter((stock) => stock.status === "out").length,
+			out: stocks?.filter(
+				(stock) => stock.status === "out" && stock.state === stockSelfStateGood
+			).length,
+			PNCount: uniquePartNumbers?.length,
+			modelCount: uniqueModel?.length,
 		},
 	];
 
 	const [totalReportsColumns, setTotalReportsColumns] = useState([
-		{ field: "total", filter: true },
-		{ field: "canWork", filter: true },
+		{ field: "total", headerName: "GPU Total", filter: true },
+		{ field: "working", filter: true },
 		{ field: "broken", filter: true },
 		{ field: "inStock", filter: true },
 		{ field: "out" },
+		{ field: "PNCount", headerName: "Part # Count" },
+		{ field: "modelCount" },
 	]);
 
-	const uniqueModel = allModels?.filter(
-		(item, index) => allModels.indexOf(item) === index
-	);
 	const uniqueModelStockReports = uniqueModel?.map((model) => {
 		return {
-			name: model,
+			model: model,
 			total: stocks?.filter((stock) => stock.model === model).length,
-			canWork: stocks?.filter(
-				(stock) => stock.model === model && stock.selfState === "still-work"
+			working: stocks?.filter(
+				(stock) => stock.model === model && stock.state === stockSelfStateGood
 			).length,
 			broken: stocks?.filter(
-				(stock) => stock.model === model && stock.selfState === "broken"
+				(stock) => stock.model === model && stock.state === stockSelfStateBad
 			).length,
 			inStock: stocks?.filter(
 				(stock) =>
 					stock.model === model &&
 					stock.status === "in" &&
-					stock.selfState === "still-work"
+					stock.state === stockSelfStateGood
 			).length,
 			out: stocks?.filter(
-				(stock) => stock.model === model && stock.status === "out"
+				(stock) =>
+					stock.model === model &&
+					stock.status === "out" &&
+					stock.state === stockSelfStateGood
 			).length,
 		};
 	});
@@ -76,9 +102,9 @@ function Overview() {
 
 	const [uniqueModelStockReportsColumns, setUniqueModelStockReportsColumns] =
 		useState([
-			{ field: "name", filter: true },
+			{ field: "model", filter: true },
 			{ field: "total", filter: true },
-			{ field: "canWork", filter: true },
+			{ field: "working", filter: true },
 			{ field: "broken", filter: true },
 			{ field: "inStock", filter: true },
 			{ field: "out", filter: true },
@@ -90,67 +116,71 @@ function Overview() {
 	);
 	const dateReport = uniqueDate?.map((date) => {
 		return {
-			name: date,
+			date: date,
 			total: stocks?.filter((stock) => stock.date === date).length,
-			canWork: stocks?.filter(
-				(stock) => stock.date === date && stock.selfState === "still-work"
+			working: stocks?.filter(
+				(stock) => stock.date === date && stock.state === stockSelfStateGood
 			).length,
 			broken: stocks?.filter(
-				(stock) => stock.date === date && stock.selfState === "broken"
+				(stock) => stock.date === date && stock.state === stockSelfStateBad
 			).length,
 			inStock: stocks?.filter(
 				(stock) =>
 					stock.date === date &&
 					stock.status === "in" &&
-					stock.selfState === "still-work"
+					stock.state === stockSelfStateGood
 			).length,
 			out: stocks?.filter(
-				(stock) => stock.date === date && stock.status === "out"
+				(stock) =>
+					stock.date === date &&
+					stock.status === "out" &&
+					stock.state === stockSelfStateGood
 			).length,
 		};
 	});
 
 	const [dateReportColumns, setDateReportColumns] = useState([
-		{ field: "name", filter: true },
+		{ field: "date", filter: true },
 		{ field: "total", filter: true },
-		{ field: "canWork", filter: true },
+		{ field: "working", filter: true },
 		{ field: "broken", filter: true },
 		{ field: "inStock", filter: true },
 		{ field: "out", filter: true },
 	]);
 
-	const [reportUrl, setReportUrl] = useState("");
 	function getReportUrl() {
-		if (totalReports && uniqueModelStockReports && dateReport && stocks) {
-			const spreadSymbol = "\r\n\r\n-,-,-,-,-,-,-,-,-,-,-,-\r\n\r\n";
-			const blob = new Blob(
-				[
-					Papa.unparse(totalReports),
-					spreadSymbol,
-					Papa.unparse(uniqueModelStockReports),
-					spreadSymbol,
-					Papa.unparse(dateReport),
-					spreadSymbol,
-					Papa.unparse(stocks),
-				],
-				{ type: "text/csv;charset=utf-8," }
-			);
-			return URL.createObjectURL(blob);
-		}
-		return "";
+		const spreadSymbol = "\r\n\r\n-,-,-,-,-,-,-,-,-,-,-,-\r\n\r\n";
+		const data = [
+			Papa.unparse(totalReports),
+			spreadSymbol,
+			Papa.unparse(uniqueModelStockReports ?? []),
+			spreadSymbol,
+			Papa.unparse(dateReport ?? []),
+			spreadSymbol,
+			Papa.unparse(stocks ?? []),
+		];
+		console.log(data);
+		const blob = new Blob(data, { type: "text/csv;charset=utf-8," });
+		return URL.createObjectURL(blob);
 	}
-
-	useEffect(() => {
-		setReportUrl(getReportUrl());
-		return () => {
-			setReportUrl("");
-		};
-	}, []);
 
 	return (
 		<>
 			<Group position="center">
-				<Button component="a" href={reportUrl} download="GPUReports.csv">
+				<Button
+					onClick={() => {
+						setReportUrl(getReportUrl());
+						setDisableExport(false);
+					}}
+				>
+					Prepare
+				</Button>
+				<Button
+					disabled={disableExport}
+					component="a"
+					href={reportUrl}
+					download="GPUReports.csv"
+				>
 					Export all reports.
 				</Button>
 			</Group>

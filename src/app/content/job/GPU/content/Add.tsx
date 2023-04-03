@@ -1,16 +1,17 @@
-import { useEffect, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useContext, useEffect, useState } from "react";
 
 import {
 	ActionIcon,
+	Affix,
 	Button,
 	createStyles,
 	Grid,
 	Group,
-	Highlight,
 	List,
-	Mark,
 	MultiSelect,
-	RingProgress,
+	Notification,
+	rem,
 	SegmentedControl,
 	Select,
 	SimpleGrid,
@@ -22,23 +23,18 @@ import { isNotEmpty, useForm } from "@mantine/form";
 import { randomId } from "@mantine/hooks";
 import { IconTrash } from "@tabler/icons-react";
 
-// import { gpuDB } from "./database/Database";
 import {
-	addNewModel,
-	addNewPartNumber,
-	getAllModels,
-	parseModelFromString,
-	parsePortsStringToObjectArray,
+	Stock,
 	stockDefectMap,
-	stockSaveFromAdd,
 	stockSelfStateBad,
 	stockSelfStateGood,
 	stockStatusInStock,
 	stockStatusOut,
-} from "../database/DBManager";
+} from "../database/Database";
+import { dataServiceContext } from "../database/DataserviceContext";
 
 const selfStateMap = [
-	{ label: "still-working", value: stockSelfStateGood },
+	{ label: "working", value: stockSelfStateGood },
 	{ label: "broken", value: stockSelfStateBad },
 ];
 
@@ -52,11 +48,6 @@ const useStyles = createStyles((theme) => ({
 		backgroundImage: `linear-gradient(-60deg, ${
 			theme.colors[theme.primaryColor][4]
 		} 0%, ${theme.colors[theme.primaryColor][7]} 100%)`,
-		padding: theme.spacing.xl * 1.5,
-
-		[`@media (max-width: ${theme.breakpoints.sm}px)`]: {
-			padding: theme.spacing.xl * 0.8,
-		},
 	},
 
 	text: {
@@ -69,16 +60,51 @@ function Add() {
 	const { classes } = useStyles();
 	const [defectData, setDefectData] = useState(stockDefectMap);
 
-	const [recordData, setRecordData] = useState([]);
-	const [siliconData, setSiliconData] = useState([]);
-	const [brandData, setBrandData] = useState([]);
-	const [modelData, setModelData] = useState([]);
-	const [memoryData, setMemoryData] = useState([]);
-	const [formFactorData, setFormFactorData] = useState([]);
-	const [portData, setPortData] = useState([]);
-	const [partNumberData, setPartNumberData] = useState([]);
+	const [recordData, setRecordData] = useState<
+		{ value: string; label: string; group: string }[]
+	>([]);
+	const [siliconData, setSiliconData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [brandData, setBrandData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [modelData, setModelData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [memoryData, setMemoryData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [formFactorData, setFormFactorData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [portData, setPortData] = useState<{ value: string; label: string }[]>(
+		[]
+	);
+	const [partNumberData, setPartNumberData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const dataService = useContext(dataServiceContext);
 
-	function getNameArrayFromObjectArray(results) {
+	const [notification, setNotification] = useState({
+		open: false,
+		message: "",
+		title: "",
+		color: "blue",
+	});
+
+	const handleNotification = (
+		message: string,
+		title = "Default notification",
+		color = "blue"
+	) => {
+		setNotification({ open: true, message, title, color });
+		// setTimeout(() => {
+		// 	setNotification({ open: false, message: "", color });
+		// }, 3000);
+	};
+
+	function getNameArrayFromObjectArray(results: any[]): any[] {
 		if (results) {
 			return results.map((item) => {
 				if (item.silicon) {
@@ -91,37 +117,40 @@ function Add() {
 	}
 
 	useEffect(() => {
-		async function setDefaultData() {
-			setSiliconData(await gpuDB.silicon.toArray(getNameArrayFromObjectArray));
-			setBrandData(await gpuDB.makerBrand.toArray(getNameArrayFromObjectArray));
-			setMemoryData(
-				await gpuDB.memorySize.toArray(getNameArrayFromObjectArray)
-			);
-			setModelData(await gpuDB.model.toArray(getNameArrayFromObjectArray));
-			setFormFactorData(
-				await gpuDB.formFactor.toArray(getNameArrayFromObjectArray)
-			);
-			setPortData(await gpuDB.port.toArray(getNameArrayFromObjectArray));
-			setPartNumberData(
-				await gpuDB.partNumber.toArray(getNameArrayFromObjectArray)
-			);
-			setRecordData(
-				await gpuDB.record.toArray((records) => {
-					if (records) {
-						return records.map((record) => {
-							return {
-								value: `${record.silicon}%${record.brand}%${record.model}%${record.memory}%${record.formFactor}%${record.ports}%${record.partNumbers}`,
-								label: `${record.brand}-${record.model}-${record.memory}-${record.formFactor}-${record.ports}-${record.partNumbers}`,
-								group: record.silicon,
-							};
-						});
-					}
-					return [];
-				})
-			);
-		}
-
-		setDefaultData();
+		dataService?.getSilicons().then((results) => {
+			setSiliconData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getBrands().then((results) => {
+			setBrandData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getMemorySizes().then((results) => {
+			setMemoryData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getModels().then((results) => {
+			setModelData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getFormFactors().then((results) => {
+			setFormFactorData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getPorts().then((results) => {
+			setPortData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getPartNumbers().then((results) => {
+			setPartNumberData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getRecords().then((records) => {
+			if (records) {
+				setRecordData(
+					records.map((record) => {
+						return {
+							value: `${record.silicon}%${record.brand}%${record.model}%${record.memory}%${record.formFactor}%${record.ports}%${record.partNumbers}`,
+							label: `${record.brand}-${record.model}-${record.memory}-${record.formFactor}-${record.ports}-${record.partNumbers}`,
+							group: record.silicon,
+						};
+					})
+				);
+			}
+		});
 		return () => {
 			setSiliconData([]);
 			setBrandData([]);
@@ -134,19 +163,19 @@ function Add() {
 		};
 	}, []);
 
-	function createNewPartNumberData(newNumber) {
+	function createNewPartNumberData(newNumber: string) {
 		const item = { value: newNumber, label: newNumber };
-		//upate to db
-		addNewPartNumber(newNumber);
+		//add to db
+		dataService?.addPartNumber({ name: newNumber });
 		setPartNumberData((current) => [...current, item]);
 		return item;
 	}
 
-	function createNewModel(newModel) {
-		const model = parseModelFromString(newModel);
+	function createNewModel(newModel: string) {
+		const model = dataService?.parseModelFromString(newModel);
 		if (model) {
 			//upate to db
-			addNewModel(model.name, model.silicon);
+			dataService?.addModel(model);
 			const item = {
 				value: model.name,
 				label: model.name,
@@ -164,9 +193,9 @@ function Add() {
 			model: "",
 			memory: "",
 			formFactor: "",
-			defect: "",
+			defect: [],
 			date: new Date(),
-			selfState: stockSelfStateGood,
+			state: stockSelfStateGood,
 			status: stockStatusInStock,
 			ports: [
 				// { type: '', active: true, key: randomId() }
@@ -180,52 +209,70 @@ function Add() {
 			memory: isNotEmpty("required"),
 			formFactor: isNotEmpty("required"),
 			date: isNotEmpty("required"),
-			selfState: isNotEmpty("required"),
+			state: isNotEmpty("required"),
 			status: isNotEmpty("required"),
 		},
 	});
 
-	function changeSiliconChangeModelData(silicon) {
-		let modelData = getAllModels(getNameArrayFromObjectArray);
-
-		if (silicon) {
-			modelData = modelData.then((results) =>
-				results.filter((item) => item.group === silicon)
-			);
-		}
-
-		modelData.then((results) => setModelData(results));
+	function changeSiliconChangeModelData(silicon: string) {
 		form.setFieldValue("model", "");
 		form.setFieldValue("silicon", silicon);
 	}
 
-	const portsFields = form.values.ports.map((item, index) => (
-		<Group key={item.key} mt="xs">
-			<Select
-				placeholder="Pick one"
-				data={portData}
-				{...form.getInputProps(`ports.${index}.type`)}
-				nothingFound="No options"
-				clearable
-				searchable
-			/>
-			<Switch
-				label="Active"
-				{...form.getInputProps(`ports.${index}.active`, { type: "checkbox" })}
-			/>
-			<ActionIcon
-				color="red"
-				onClick={() => form.removeListItem("ports", index)}
-			>
-				<IconTrash size={16} />
-			</ActionIcon>
-		</Group>
-	));
+	const portsFields = form.values.ports.map(
+		(item: { type: string; active: boolean; key: string }, index) => (
+			<Group key={item.key} mt="xs">
+				<Select
+					placeholder="Pick one"
+					data={portData}
+					{...form.getInputProps(`ports.${index}.type`)}
+					nothingFound="No options"
+					clearable
+					searchable
+				/>
+				<Switch
+					label="Active"
+					{...form.getInputProps(`ports.${index}.active`, { type: "checkbox" })}
+				/>
+				<ActionIcon
+					color="red"
+					onClick={() => form.removeListItem("ports", index)}
+				>
+					<IconTrash size={16} />
+				</ActionIcon>
+			</Group>
+		)
+	);
 
-	const circleSize = 120;
-	const circleThickness = 10;
+	function parsePortsStringToObjectArray(string: string) {
+		const portsObjectArray: any[] = [];
+		if (string) {
+			const ports = string.split(",");
+			ports.map((port) => {
+				const parePort = port.split("x");
+				if (parePort.length === 2) {
+					let n = 0;
+					while (n < parseInt(parePort[0].trim())) {
+						portsObjectArray.push({
+							type: parePort[1].trim(),
+							active: true,
+							key: randomId(),
+						});
+						n++;
+					}
+				} else {
+					portsObjectArray.push({
+						type: parePort[0].trim(),
+						active: true,
+						key: randomId(),
+					});
+				}
+			});
+		}
+		return portsObjectArray;
+	}
 
-	function setValueByTemplate(templateString) {
+	function setValueByTemplate(templateString: string) {
 		if (!templateString) {
 			form.reset();
 			return;
@@ -247,14 +294,41 @@ function Add() {
 	}
 
 	async function save() {
-		try {
-			//check form data
+		//check form data
+		const modelFromDatabase = await dataService?.getModelByName(
+			form.values.model
+		);
+		if (!modelFromDatabase) {
+			form.setFieldError("model", "Can not find model");
+			return;
+		}
+		if (modelFromDatabase.silicon !== form.values.silicon) {
+			form.setFieldError("model", "This model does not belong current silicon");
+			return;
+		}
 
-			stockSaveFromAdd(form.values).then((newId) => console.log(newId));
-		} catch (error) {
-			throw error;
+		if (form.isValid()) {
+			dataService
+				?.stockSaveFromAdd(form.values)
+				.then((newId) =>
+					handleNotification(
+						`${form.values.silicon}: ${form.values.model}, saved.`,
+						`Saved successfully, id is ${newId}.`
+					)
+				);
 		}
 	}
+
+	const lastThreeData = useLiveQuery(() => {
+		return dataService?.getLastThreeStocks();
+	}, []);
+
+	const lastThreeStocks = lastThreeData?.map((stock: Stock, index) => (
+		<List.Item key={stock.id}>
+			{stock.id}-{stock.brand}-{stock.model}-{stock.memory}-{stock.formFactor}-
+			{stock.ports}-{stock.partNumbers}
+		</List.Item>
+	));
 
 	return (
 		<form
@@ -264,48 +338,7 @@ function Add() {
 		>
 			<Grid grow>
 				<Grid.Col span={12} className={classes.wrapper}>
-					<Grid className={classes.text} align="center" justify="space-between">
-						<Grid.Col span={5}>
-							<List className={classes.text}>
-								<List.Item>2/28/2023:</List.Item>
-								<List.Item>
-									<Highlight highlight={["40", "can work", "non-working"]}>
-										40 can work
-									</Highlight>
-								</List.Item>
-								<List.Item>40 non-working</List.Item>
-							</List>
-						</Grid.Col>
-						<Grid.Col span={5}>
-							<List className={classes.text}>
-								<List.Item>
-									Last Record: <Mark color="red">Rx 430</Mark>, 1.
-								</List.Item>
-								<List.Item>Number:</List.Item>
-							</List>
-						</Grid.Col>
-						<Grid.Col span={2}>
-							<RingProgress
-								size={circleSize}
-								thickness={circleThickness}
-								label={
-									<Text
-										size="xs"
-										align="center"
-										px="xs"
-										sx={{ pointerEvents: "none" }}
-									>
-										Total: 500
-									</Text>
-								}
-								sections={[
-									{ value: 40, color: "cyan", tooltip: "Documents - 40 Gb" },
-									{ value: 25, color: "orange", tooltip: "Apps - 25 Gb" },
-									{ value: 15, color: "grape", tooltip: "Other - 15 Gb" },
-								]}
-							/>
-						</Grid.Col>
-					</Grid>
+					<List className={classes.text}>{lastThreeStocks}</List>
 				</Grid.Col>
 				<Grid.Col span={12}>
 					<Select
@@ -375,13 +408,14 @@ function Add() {
 					<DatePickerInput
 						placeholder="Pick date"
 						label="TEST DATE"
+						valueFormat="M/D/YYYY"
 						{...form.getInputProps("date")}
 					/>
 				</Grid.Col>
 				<Grid.Col span={6}>
 					<Grid>
 						<Grid.Col span={6}>
-							{form.errors.selfState ? (
+							{form.errors.state ? (
 								<Text fz="sm" fw={500} c="red">
 									STATE*
 								</Text>
@@ -393,7 +427,7 @@ function Add() {
 							<SegmentedControl
 								fullWidth
 								data={selfStateMap}
-								{...form.getInputProps("selfState")}
+								{...form.getInputProps("state")}
 							/>
 						</Grid.Col>
 						<Grid.Col span={6}>
@@ -473,9 +507,31 @@ function Add() {
 						<Button type="submit" size="md">
 							Sumbit
 						</Button>
+						<Button variant="outline" onClick={() => form.reset()}>
+							Reset to initial values
+						</Button>
 					</Group>
 				</Grid.Col>
 			</Grid>
+			{notification.open && (
+				<Affix position={{ bottom: rem(20), right: rem(20) }}>
+					<Notification
+						onClose={() =>
+							setNotification({
+								open: false,
+								message: "",
+								title: "",
+								color: "blue",
+							})
+						}
+						color={notification.color}
+						withCloseButton
+						title={notification.title}
+					>
+						{notification.message}
+					</Notification>
+				</Affix>
+			)}
 		</form>
 	);
 }
