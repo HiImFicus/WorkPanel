@@ -31,6 +31,7 @@ const navbarLinks = [
 		initiallyOpened: false,
 		links: [
 			{ label: "Overview", link: "/gpu" },
+			{ label: "Sell List", link: "/gpu/sell-prepare" },
 			{ label: "List", link: "/gpu/list" },
 			{ label: "Add", link: "/gpu/add" },
 			{ label: "Setting", link: "/gpu/setting" },

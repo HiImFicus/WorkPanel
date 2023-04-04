@@ -3,7 +3,6 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Optional theme CSS
 
 import { AgGridReact } from "ag-grid-react"; // the AG Grid React Component
 import { useLiveQuery } from "dexie-react-hooks";
-import csvDownload from "json-to-csv-export";
 import Papa from "papaparse";
 import { useContext, useMemo, useState } from "react";
 
@@ -84,6 +83,16 @@ function Overview() {
 					stock.status === "in" &&
 					stock.state === stockSelfStateGood
 			).length,
+			standby: stocks?.filter(
+				(stock) =>
+					stock.model === model &&
+					stock.status === "in" &&
+					stock.state === stockSelfStateGood &&
+					stock.defect === ""
+			).length,
+			defect: stocks?.filter(
+				(stock) => stock.model === model && stock.defect !== ""
+			).length,
 			out: stocks?.filter(
 				(stock) =>
 					stock.model === model &&
@@ -107,6 +116,8 @@ function Overview() {
 			{ field: "working", filter: true },
 			{ field: "broken", filter: true },
 			{ field: "inStock", filter: true },
+			{ field: "standby", filter: true },
+			{ field: "defect", filter: true },
 			{ field: "out", filter: true },
 		]);
 

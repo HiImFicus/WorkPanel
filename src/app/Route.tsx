@@ -6,6 +6,7 @@ import Home from "./content/home/Home";
 import Add from "./content/job/gpu/content/Add";
 import List from "./content/job/gpu/content/List";
 import Overview from "./content/job/gpu/content/Overview";
+import SellList from "./content/job/gpu/content/SellList";
 import Setting from "./content/job/gpu/content/Setting";
 import Update from "./content/job/gpu/content/Update";
 import Gpu from "./content/job/gpu/Gpu";
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
 					{ path: "setting", element: <Setting /> },
 					{ path: "add", element: <Add /> },
 					{ path: "list", element: <List /> },
+					{ path: "sell-prepare", element: <SellList /> },
 					{ path: ":id", element: <Update /> },
 				],
 			},
