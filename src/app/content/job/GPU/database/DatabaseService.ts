@@ -336,6 +336,13 @@ class DatabaseServie {
 		return await this.database.getStockTable().toArray();
 	}
 
+	async getStocksOrderBy(orderBy: string = "id") {
+		return await this.database
+			.getStockTable()
+			.orderBy(orderBy)
+			.sortBy("silicon");
+	}
+
 	async getStocksByWhere(where: string, value: string) {
 		return await this.database
 			.getStockTable()

@@ -4,11 +4,10 @@ top three and total report
 data model
 GPU-Z info
 
-overview export
+batch action button on list page
 
+sell list table pagination
 
-use by Vite
+generate sell list
 
-
-wrong data:
-8	AMD	DELL	Radeon R5 430	2GB	L - PROFILE	2 x DP	CN-00F8PX
+add field location memory type.

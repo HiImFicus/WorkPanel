@@ -1,10 +1,78 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useContext } from "react";
 
-import { Accordion, Badge, Flex, Table } from "@mantine/core";
+import {
+	Accordion,
+	Badge,
+	createStyles,
+	Flex,
+	rem,
+	Table,
+	Text,
+} from "@mantine/core";
 
 import { Stock } from "../database/Database";
 import { dataServiceContext } from "../database/DataserviceContext";
+
+const useStyles = createStyles((theme) => ({
+	header: {
+		position: "sticky",
+		top: 0,
+		backgroundColor:
+			theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
+		boxShadow: theme.shadows.sm,
+
+		"&::after": {
+			content: '""',
+			position: "absolute",
+			borderBottom: `${rem(1)} solid ${
+				theme.colorScheme === "dark"
+					? theme.colors.dark[3]
+					: theme.colors.gray[2]
+			}`,
+		},
+	},
+}));
+
+interface eBayList {
+	Action: string;
+	CustomLabel: string;
+	Category: 27386;
+	StoreCategory: 39280041014;
+	title: string;
+	Subtitle: string | null;
+	Relationship: string | null;
+	RelationshipDetails: string | null;
+	ConditionID: 2500;
+	ConditionDescription: "Tested 100% Performance, and 100% Working for All Display Ports, Ready for Resale";
+	Brand: string;
+	ChipsetManufacturer: string;
+	ChipsetGPUModel: string;
+	MemorySize: string;
+	MemoryType: string;
+	CompatibleSlot: string;
+	Connectors: string;
+	PowerCableRequirement: string | null;
+	Features: "Multiple Monitor Support";
+	MPN: string;
+	APIs: string | null;
+	CoolingComponentIncluded: string | null;
+	CountryRegionofManufacture: string | null;
+	CaliforniaProp65Warning: string | null;
+	ItemHeight: string | null;
+	ItemLength: string | null;
+	ItemWidth: string | null;
+	ManufacturerWarranty: string | null;
+	PicURL: string;
+	GalleryType: string | null;
+	Description: string;
+	Format: "FixedPrice";
+	Duration: "GTC";
+	StartPrice: string;
+	BuyItNowPrice: string | null;
+	Quantity: number;
+	PayPalAccepted: 1;
+}
 
 const SellList = () => {
 	function organizeData(stocks: Stock[]) {
@@ -105,10 +173,13 @@ const SellList = () => {
 
 		return data;
 	}
+	const { classes } = useStyles();
 
 	const dataService = useContext(dataServiceContext);
 	const stocks = useLiveQuery(() =>
-		dataService?.getStocks().then((stocks) => organizeData(stocks))
+		dataService
+			?.getStocksOrderBy("model")
+			.then((stocks) => organizeData(stocks))
 	);
 
 	const columns = React.useMemo(
@@ -199,14 +270,6 @@ const SellList = () => {
 		[]
 	);
 
-	// GPU: 0,
-	// working: 0,
-	// broken: 0,
-	// inStock: 0,
-	// standby: 0,
-	// defect: 0,
-	// out: 0,
-
 	const rows = stocks?.map((element: any) => (
 		<React.Fragment key={element.model}>
 			<tr>
@@ -221,7 +284,7 @@ const SellList = () => {
 				<td>{element.out}</td>
 			</tr>
 			{element.partNumbers && (
-				<tr>
+				<tr style={{ textAlign: "center" }}>
 					<td colSpan={9}>
 						<Accordion defaultValue={element.partNumbers[0].partNumber}>
 							{element.partNumbers.map((part: any) => {
@@ -253,15 +316,17 @@ const SellList = () => {
 											</Flex>
 										</Accordion.Control>
 										<Accordion.Panel>
-											<table>
+											<Table>
 												<thead>
 													<tr>
 														<th>Id</th>
-														<th>Slicon</th>
+														<th>Silicon</th>
+														<th>model</th>
 														<th>brand</th>
 														<th>memory</th>
 														<th>formFactor</th>
 														<th>ports</th>
+														<th>part #</th>
 														<th>state</th>
 														<th>status</th>
 														<th>defect</th>
@@ -273,18 +338,30 @@ const SellList = () => {
 														<tr key={stock.id}>
 															<td>{stock.id}</td>
 															<td>{stock.silicon}</td>
+															<td>{stock.model}</td>
 															<td>{stock.brand}</td>
 															<td>{stock.memory}</td>
 															<td>{stock.formFactor}</td>
 															<td>{stock.ports}</td>
+															<td>{stock.partNumbers}</td>
 															<td>{stock.state}</td>
-															<td>{stock.status}</td>
+															<td>
+																{stock.status === "in" ? (
+																	<Badge color="green" variant="filled">
+																		<Text tt="uppercase">{stock.status}</Text>
+																	</Badge>
+																) : (
+																	<Badge color="pink" variant="filled">
+																		<Text tt="uppercase">{stock.status}</Text>
+																	</Badge>
+																)}
+															</td>
 															<td>{stock.defect}</td>
 															<td>{stock.date}</td>
 														</tr>
 													))}
 												</tbody>
-											</table>
+											</Table>
 										</Accordion.Panel>
 									</Accordion.Item>
 								);
@@ -293,22 +370,35 @@ const SellList = () => {
 					</td>
 				</tr>
 			)}
+			<tr>
+				<td colSpan={9}></td>
+			</tr>
 		</React.Fragment>
 	));
 
+	const report = {
+		partNumberCount: 0,
+	};
+	// console.log(stocks);
+	stocks?.map((item: any) => {
+		report.partNumberCount += item.partNumbersCount;
+	});
+
+	console.log(report);
+
 	return (
 		<Table striped highlightOnHover withColumnBorders>
-			<thead>
+			<thead className={classes.header}>
 				<tr>
-					<th>model</th>
-					<th>partNumbersCount</th>
-					<th>total</th>
-					<th>working</th>
-					<th>broken</th>
-					<th>inStock</th>
-					<th>standby</th>
-					<th>defect</th>
-					<th>out</th>
+					<th>Model</th>
+					<th>Part # Qty</th>
+					<th>Total</th>
+					<th>Working</th>
+					<th>Broken</th>
+					<th>InStock</th>
+					<th>Standby</th>
+					<th>Defect</th>
+					<th>Out</th>
 				</tr>
 			</thead>
 			<tbody>{rows}</tbody>
