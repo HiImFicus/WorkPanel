@@ -1,20 +1,23 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import React, { useContext } from "react";
+import csvDownload from "json-to-csv-export";
+import React, { useContext, useState } from "react";
 
 import {
 	Accordion,
 	Badge,
+	Box,
+	Button,
 	createStyles,
 	Flex,
+	LoadingOverlay,
 	rem,
 	Table,
-	Text,
-	ThemeIcon,
 } from "@mantine/core";
+import { IconFileExport } from "@tabler/icons-react";
 
+import { getCurrentDate } from "../../../../common/Helps";
 import { Stock } from "../database/Database";
 import { dataServiceContext } from "../database/DataserviceContext";
-import { IconThumbUp } from "@tabler/icons-react";
 
 const useStyles = createStyles((theme) => ({
 	header: {
@@ -177,11 +180,18 @@ const SellList = () => {
 	}
 	const { classes } = useStyles();
 
+	const [disableExport, setDisableExport] = useState(true);
+	const [visible, setVisible] = useState(true);
 	const dataService = useContext(dataServiceContext);
 	const stocks = useLiveQuery(() =>
-		dataService
-			?.getStocksOrderBy("model")
-			.then((stocks) => organizeData(stocks))
+		dataService?.getStocksOrderBy("model").then((stocks) => {
+			const result = organizeData(stocks);
+			if (stocks.length > 0 && disableExport) {
+				setDisableExport(false);
+			}
+			setVisible(false);
+			return result;
+		})
 	);
 
 	const columns = React.useMemo(
@@ -278,13 +288,13 @@ const SellList = () => {
 				<td>{element.model}</td>
 				<td>
 					{element.standby ? (
-					<Badge color="green" variant="filled">
-						{element.standby}
-					</Badge>
+						<Badge color="green" variant="filled">
+							{element.standby}
+						</Badge>
 					) : (
-					<Badge color="red" variant="filled">
-						{element.standby}
-					</Badge>
+						<Badge color="red" variant="filled">
+							{element.standby}
+						</Badge>
 					)}
 				</td>
 				<td>{element.partNumbersCount}</td>
@@ -356,15 +366,16 @@ const SellList = () => {
 															<td>{stock.formFactor}</td>
 															<td>{stock.ports}</td>
 															<td>{stock.partNumbers}</td>
-															<td>{stock.state === "working" ? (
-																<Badge color="green" variant="filled">
-																	{stock.state}
-																</Badge>
-															) : (
-																<Badge color="pink" variant="filled">
-																	{stock.state}
-																</Badge>
-															)}
+															<td>
+																{stock.state === "working" ? (
+																	<Badge color="green" variant="filled">
+																		{stock.state}
+																	</Badge>
+																) : (
+																	<Badge color="pink" variant="filled">
+																		{stock.state}
+																	</Badge>
+																)}
 															</td>
 															<td>
 																{stock.status === "in" ? (
@@ -378,7 +389,8 @@ const SellList = () => {
 																)}
 															</td>
 															<td>
-																{stock.state === "working" && stock.defect === "" ? (
+																{stock.state === "working" &&
+																stock.defect === "" ? (
 																	<Badge color="green" variant="filled"></Badge>
 																) : (
 																	<Badge color="pink" variant="filled">
@@ -414,7 +426,7 @@ const SellList = () => {
 		out: 0,
 		broken: 0,
 	};
-	// console.log(stocks);
+	const sellList: eBayList[] = [];
 	stocks?.map((item: any) => {
 		report.partNumberCount += item.partNumbersCount;
 		report.modelCount++;
@@ -423,27 +435,104 @@ const SellList = () => {
 		report.defect += item.defect;
 		report.out += item.out;
 		report.broken += item.broken;
+
+		//generate sell list
+		item.partNumbers.map((partNumber: any) => {
+			if (partNumber.standby) {
+				const stock = partNumber.stocks[0];
+				sellList.push({
+					Action: "Add",
+					CustomLabel:
+						"GPU-" +
+						stock.partNumbers.split(",")[0] +
+						"_" +
+						(stock.silicon === "NVIDIA"
+							? stock.model.includes("Quadro")
+								? "G1"
+								: "G2"
+							: "G3"),
+					Category: 27386,
+					StoreCategory: 39280041014,
+					title: "",
+					Subtitle: "",
+					Relationship: "",
+					RelationshipDetails: "",
+					ConditionID: 2500,
+					ConditionDescription:
+						"Tested 100% Performance, and 100% Working for All Display Ports, Ready for Resale",
+					Brand: stock.brand,
+					ChipsetManufacturer: stock.silicon,
+					ChipsetGPUModel: stock.silicon + " " + stock.model,
+					MemorySize: stock.memory,
+					MemoryType: "",
+					CompatibleSlot: "",
+					Connectors: stock.ports.replaceAll(",", "; "),
+					PowerCableRequirement: "",
+					Features: "Multiple Monitor Support",
+					MPN: stock.partNumbers.split(",")[0],
+					APIs: "",
+					CoolingComponentIncluded: "",
+					CountryRegionofManufacture: "",
+					CaliforniaProp65Warning: "",
+					ItemHeight: "",
+					ItemLength: "",
+					ItemWidth: "",
+					ManufacturerWarranty: "",
+					PicURL: "",
+					GalleryType: "",
+					Description: "",
+					Format: "FixedPrice",
+					Duration: "GTC",
+					StartPrice: "",
+					BuyItNowPrice: "",
+					Quantity: partNumber.standby,
+					PayPalAccepted: 1,
+				});
+			}
+		});
 	});
 
 	console.log(report);
 
+	function getExportMetaData() {
+		return {
+			data: sellList,
+			filename: "eBay_list_" + getCurrentDate(),
+			delimiter: ",",
+		};
+	}
+
 	return (
-		<Table striped highlightOnHover withColumnBorders>
-			<thead className={classes.header}>
-				<tr>
-					<th>Model</th>
-					<th>Standby</th>
-					<th>Part # Qty</th>
-					<th>Total</th>
-					<th>Working</th>
-					<th>Broken</th>
-					<th>InStock</th>
-					<th>Defect</th>
-					<th>Out</th>
-				</tr>
-			</thead>
-			<tbody>{rows}</tbody>
-		</Table>
+		<Box pos="relative">
+			<LoadingOverlay visible={visible} overlayBlur={2} />
+			<Button.Group>
+				<Button
+					leftIcon={<IconFileExport size="1rem" />}
+					variant="gradient"
+					gradient={{ from: "orange", to: "red" }}
+					disabled={disableExport}
+					onClick={() => csvDownload(getExportMetaData())}
+				>
+					Export Sell List
+				</Button>
+			</Button.Group>
+			<Table striped highlightOnHover withColumnBorders>
+				<thead className={classes.header}>
+					<tr>
+						<th>Model</th>
+						<th>Standby</th>
+						<th>Part # Qty</th>
+						<th>Total</th>
+						<th>Working</th>
+						<th>Broken</th>
+						<th>InStock</th>
+						<th>Defect</th>
+						<th>Out</th>
+					</tr>
+				</thead>
+				<tbody>{rows}</tbody>
+			</Table>
+		</Box>
 	);
 };
 
