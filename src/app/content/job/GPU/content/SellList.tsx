@@ -9,10 +9,12 @@ import {
 	rem,
 	Table,
 	Text,
+	ThemeIcon,
 } from "@mantine/core";
 
 import { Stock } from "../database/Database";
 import { dataServiceContext } from "../database/DataserviceContext";
+import { IconThumbUp } from "@tabler/icons-react";
 
 const useStyles = createStyles((theme) => ({
 	header: {
@@ -274,12 +276,22 @@ const SellList = () => {
 		<React.Fragment key={element.model}>
 			<tr>
 				<td>{element.model}</td>
+				<td>
+					{element.standby ? (
+					<Badge color="green" variant="filled">
+						{element.standby}
+					</Badge>
+					) : (
+					<Badge color="red" variant="filled">
+						{element.standby}
+					</Badge>
+					)}
+				</td>
 				<td>{element.partNumbersCount}</td>
 				<td>{element.GPU}</td>
 				<td>{element.working}</td>
 				<td>{element.broken}</td>
 				<td>{element.inStock}</td>
-				<td>{element.standby}</td>
 				<td>{element.defect}</td>
 				<td>{element.out}</td>
 			</tr>
@@ -301,14 +313,14 @@ const SellList = () => {
 												direction="row"
 											>
 												<Badge variant="filled">{part.partNumber}</Badge>
-												<Badge color="green">{`total: ${part.GPU}`}</Badge>
+												<Badge color="cyan">{`total: ${part.GPU}`}</Badge>
 												<Badge color="orange">{`working: ${part.working}`}</Badge>
 												<Badge color="red">{`broken: ${part.broken}`}</Badge>
 												<Badge
 													color="grape"
 													variant="outline"
 												>{`inStock: ${part.inStock}`}</Badge>
-												<Badge color="cyan" variant="filled">
+												<Badge color="green" variant="filled">
 													{`standby: ${part.standby}`}
 												</Badge>
 												<Badge color="dark">{`defect: ${part.defect}`}</Badge>
@@ -344,19 +356,36 @@ const SellList = () => {
 															<td>{stock.formFactor}</td>
 															<td>{stock.ports}</td>
 															<td>{stock.partNumbers}</td>
-															<td>{stock.state}</td>
+															<td>{stock.state === "working" ? (
+																<Badge color="green" variant="filled">
+																	{stock.state}
+																</Badge>
+															) : (
+																<Badge color="pink" variant="filled">
+																	{stock.state}
+																</Badge>
+															)}
+															</td>
 															<td>
 																{stock.status === "in" ? (
 																	<Badge color="green" variant="filled">
-																		<Text tt="uppercase">{stock.status}</Text>
+																		{stock.status}
 																	</Badge>
 																) : (
 																	<Badge color="pink" variant="filled">
-																		<Text tt="uppercase">{stock.status}</Text>
+																		{stock.status}
 																	</Badge>
 																)}
 															</td>
-															<td>{stock.defect}</td>
+															<td>
+																{stock.state === "working" && stock.defect === "" ? (
+																	<Badge color="green" variant="filled"></Badge>
+																) : (
+																	<Badge color="pink" variant="filled">
+																		{stock.defect}
+																	</Badge>
+																)}
+															</td>
 															<td>{stock.date}</td>
 														</tr>
 													))}
@@ -378,10 +407,22 @@ const SellList = () => {
 
 	const report = {
 		partNumberCount: 0,
+		modelCount: 0,
+		total: 0,
+		standbyForSell: 0,
+		defect: 0,
+		out: 0,
+		broken: 0,
 	};
 	// console.log(stocks);
 	stocks?.map((item: any) => {
 		report.partNumberCount += item.partNumbersCount;
+		report.modelCount++;
+		report.total += item.GPU;
+		report.standbyForSell += item.standby;
+		report.defect += item.defect;
+		report.out += item.out;
+		report.broken += item.broken;
 	});
 
 	console.log(report);
@@ -391,12 +432,12 @@ const SellList = () => {
 			<thead className={classes.header}>
 				<tr>
 					<th>Model</th>
+					<th>Standby</th>
 					<th>Part # Qty</th>
 					<th>Total</th>
 					<th>Working</th>
 					<th>Broken</th>
 					<th>InStock</th>
-					<th>Standby</th>
 					<th>Defect</th>
 					<th>Out</th>
 				</tr>
