@@ -171,10 +171,10 @@ class Database {
 				if (data["selfState"] != stockSelfStateBad) {
 					newStock["state"] = stockSelfStateGood;
 				} else {
-					newStock["state"] = data["selfState"];
+					newStock["state"] = data["selfState"].trim();
 				}
 			} else if (field === "status") {
-				newStock[field] = data["status"].toLowerCase();
+				newStock[field] = data["status"].toLowerCase().trim();
 			} else if (field === "defect") {
 				newStock[field] = stringArrayTrimValueToString(
 					data[field]
@@ -188,7 +188,7 @@ class Database {
 					newStock[field] = "";
 				}
 			} else {
-				newStock[field] = data[field];
+				newStock[field] = data[field].trim();
 			}
 		}, data);
 

@@ -159,6 +159,9 @@ export default function Update() {
 				form.setFieldValue("partNumbers", result.partNumbers.split(","));
 			}
 
+			form.setFieldValue("price", Number(result.price));
+
+
 			setVisible(false);
 			return result;
 		})
@@ -570,7 +573,8 @@ export default function Update() {
 					<Grid.Col span={3}>
 						<NumberInput
 							label="PRICE"
-							placeholder="Pick one"
+							step={0.01}
+							precision={2}
 							{...form.getInputProps("price")}
 						/>
 					</Grid.Col>

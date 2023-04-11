@@ -40,3 +40,12 @@ export function stringArrayTrimValueToString(orignal: string) {
 		.map((value: string) => value.trim())
 		.join(",");
 }
+
+export function negativeEstimate(number: number): number {
+	const half = Math.floor(number/2)
+	if (half > 1) {
+		return half;
+	}
+
+	return number;
+}

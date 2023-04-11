@@ -292,7 +292,7 @@ const SellList = () => {
 							{element.standby}
 						</Badge>
 					) : (
-						<Badge color="red" variant="filled">
+						<Badge color="pink" variant="filled">
 							{element.standby}
 						</Badge>
 					)}
@@ -428,6 +428,7 @@ const SellList = () => {
 		modelCount: 0,
 		total: 0,
 		standbyForSell: 0,
+		standbyPartNumberCount: 0,
 		defect: 0,
 		out: 0,
 		broken: 0,
@@ -445,49 +446,127 @@ const SellList = () => {
 		//generate sell list
 		item.partNumbers.map((partNumber: any) => {
 			if (partNumber.standby) {
-				const stock = partNumber.stocks[0];
-				sellList.push({
-					Action: "ADD",
-					CustomLabel:
-						"GPU-" + stock.partNumbers.split(",")[0] + "_" + stock.location,
-					Category: 27386,
-					StoreCategory: 39280041014,
-					title: stock.title,
-					Subtitle: "",
-					Relationship: "",
-					RelationshipDetails: "",
-					ConditionID: 2500,
-					ConditionDescription:
-						"Tested 100% Performance, and 100% Working for All Display Ports, Ready for Resale",
-					Brand: stock.brand,
-					ChipsetManufacturer: stock.silicon,
-					ChipsetGPUModel: stock.silicon + " " + stock.model,
-					MemorySize: stock.memory,
-					MemoryType: stock.memoryType,
-					CompatibleSlot: stock.compatibleSlot,
-					Connectors: stock.ports.replaceAll(",", "; "),
-					PowerCableRequirement: "",
-					Features: "Multiple Monitor Support",
-					MPN: stock.partNumbers.split(",")[0],
-					APIs: "",
-					CoolingComponentIncluded: "",
-					CountryRegionofManufacture: "",
-					CaliforniaProp65Warning: "",
-					ItemHeight: "",
-					ItemLength: "",
-					ItemWidth: "",
-					ManufacturerWarranty: "",
-					PicURL: stock.picUrl,
-					GalleryType: "",
-					Description: "",
-					Format: "FixedPrice",
-					Duration: "GTC",
-					StartPrice: stock.price,
-					BuyItNowPrice: "",
-					Quantity: partNumber.standby,
-					PayPalAccepted: 1,
-				});
+				report.standbyPartNumberCount++;
+				const lpStocks = partNumber.stocks.filter(
+					(every: any) => every.formFactor === "L - PROFILE" && every.status === "in" && every.state === "working" && every.defect === ""
+				);
+				const hpStocks = partNumber.stocks.filter(
+					(every: any) => every.formFactor === "H - PROFILE" && every.status === "in" && every.state === "working" && every.defect === ""
+				);
 
+				if (lpStocks.length > 0) {
+					const lpStock = lpStocks[0];
+					let lpPartNum = lpStock.partNumbers.replaceAll(",", " ");
+					if (lpPartNum.length > 15) {
+						lpPartNum = lpPartNum.slice(0, 10) + "..."
+					}
+					let lpTitle = `${lpStock.brand} ${lpStock.model}|${lpPartNum}|${lpStock.memory} VideoCard|LP|${lpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|Tested`
+
+					if (lpTitle.length > 80) {
+						console.log(lpTitle)
+					}
+
+					sellList.push({
+						Action: "ADD",
+						CustomLabel:
+							"GPU-" + lpStock.partNumbers + "(LP)" + "_" + lpStock.location,
+						Category: 27386,
+						StoreCategory: 39280041014,
+						title: lpTitle,
+						Subtitle: "",
+						Relationship: "",
+						RelationshipDetails: "",
+						ConditionID: 2500,
+						ConditionDescription:
+							"Tested 100% Performance, and 100% Working for All Display Ports, Ready for Resale",
+						Brand: lpStock.brand,
+						ChipsetManufacturer: lpStock.silicon,
+						ChipsetGPUModel: lpStock.silicon + " " + lpStock.model,
+						MemorySize: lpStock.memory,
+						MemoryType: lpStock.memoryType,
+						CompatibleSlot: lpStock.compatibleSlot,
+						Connectors: lpStock.ports.replaceAll(",", "; "),
+						PowerCableRequirement: "",
+						Features: "Multiple Monitor Support",
+						MPN: lpStock.partNumbers,
+						APIs: "",
+						CoolingComponentIncluded: "",
+						CountryRegionofManufacture: "",
+						CaliforniaProp65Warning: "",
+						ItemHeight: "",
+						ItemLength: "",
+						ItemWidth: "",
+						ManufacturerWarranty: "",
+						PicURL: lpStock.picUrl,
+						GalleryType: "",
+						Description: "",
+						Format: "FixedPrice",
+						Duration: "GTC",
+						StartPrice: lpStock.price,
+						BuyItNowPrice: "",
+						Quantity: lpStocks.length,
+						PayPalAccepted: 1,
+					});
+				}
+
+				if (hpStocks.length > 0) {
+					const hpStock = hpStocks[0];
+					let hpPartNum = hpStock.partNumbers.replaceAll(",", " ");
+					if (hpPartNum.length > 15) {
+						hpPartNum = hpPartNum.slice(0, 10) + "..."
+					}
+					
+					let hpTitle = `${hpStock.brand} ${hpStock.model}|${hpPartNum}|${hpStock.memory} VideoCard|HP|${hpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|Tested`
+
+					if (hpTitle.length > 80) {
+						console.log(hpTitle)
+					}
+
+					sellList.push({
+						Action: "ADD",
+						CustomLabel:
+							"GPU-" + hpStock.partNumbers + "(HP)" + "_" + hpStock.location,
+						Category: 27386,
+						StoreCategory: 39280041014,
+						title: hpTitle,
+						Subtitle: "",
+						Relationship: "",
+						RelationshipDetails: "",
+						ConditionID: 2500,
+						ConditionDescription:
+							"Tested 100% Performance, and 100% Working for All Display Ports, Ready for Resale",
+						Brand: hpStock.brand,
+						ChipsetManufacturer: hpStock.silicon,
+						ChipsetGPUModel: hpStock.silicon + " " + hpStock.model,
+						MemorySize: hpStock.memory,
+						MemoryType: hpStock.memoryType,
+						CompatibleSlot: hpStock.compatibleSlot,
+						Connectors: hpStock.ports.replaceAll(",", "; "),
+						PowerCableRequirement: "",
+						Features: "Multiple Monitor Support",
+						MPN: hpStock.partNumbers,
+						APIs: "",
+						CoolingComponentIncluded: "",
+						CountryRegionofManufacture: "",
+						CaliforniaProp65Warning: "",
+						ItemHeight: "",
+						ItemLength: "",
+						ItemWidth: "",
+						ManufacturerWarranty: "",
+						PicURL: hpStock.picUrl,
+						GalleryType: "",
+						Description: "",
+						Format: "FixedPrice",
+						Duration: "GTC",
+						StartPrice: hpStock.price,
+						BuyItNowPrice: "",
+						Quantity: hpStocks.length,
+						PayPalAccepted: 1,
+					});
+
+				}
+
+				const stock = partNumber.stocks[0];
 				const firstProfile = stock.formFactor;
 				const differentProfiles = partNumber.stocks.filter(
 					(every: any) => every.formFactor !== firstProfile

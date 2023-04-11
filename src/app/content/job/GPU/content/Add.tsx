@@ -238,7 +238,7 @@ function Add() {
 			partNumbers: [],
 			title: "",
 			location: "",
-			picURL: "",
+			picUrl: "",
 			price: 0,
 		},
 		validate: {
@@ -587,13 +587,15 @@ function Add() {
 					<TextInput
 						label="PIC URL"
 						placeholder="Pick one"
-						{...form.getInputProps("picURL")}
+						{...form.getInputProps("picUrl")}
 					/>
 				</Grid.Col>
 				<Grid.Col span={3}>
 					<NumberInput
 						label="PRICE"
 						placeholder="Pick one"
+						step={0.01}
+						precision={2}
 						{...form.getInputProps("price")}
 					/>
 				</Grid.Col>
