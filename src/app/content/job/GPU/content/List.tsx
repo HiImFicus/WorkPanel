@@ -19,6 +19,7 @@ import { IconDatabaseImport, IconFileExport, IconX } from "@tabler/icons-react";
 
 import { ReactTable } from "../../../../common/data/ReactTable";
 import { getCurrentDate } from "../../../../common/Helps";
+import { Stock } from "../database/Database";
 import { dataServiceContext } from "../database/DataserviceContext";
 
 const List: React.FC = () => {
@@ -146,11 +147,37 @@ const List: React.FC = () => {
 		},
 	};
 
+	const papaUpdateConfig = {
+		header: true,
+		skipEmptyLines: true,
+		chunk: (results: any, parser: any) => {
+			// parser.abort();
+			parser.pause();
+			dataService
+				?.bulkUpdateStockFromImport(results.data)
+				.catch((error) => console.log(error.message));
+			parser.resume();
+		},
+		// chunkSize: 10240,
+		complete: function () {
+			setVisible(false);
+		},
+	};
+
 	const onBtnImportCSV = useCallback((file: any) => {
 		if (file) {
 			setVisible(true);
 			// Papa.LocalChunkSize = 10240;
 			Papa.parse(file, papaConfig);
+		}
+	}, []);
+
+	const onBtnUpdateCSV = useCallback((file: any) => {
+		if (file) {
+			// setVisible(true);
+			// Papa.LocalChunkSize = 10240;
+			Papa.parse(file, papaUpdateConfig);
+			console.log("update completed.");
 		}
 	}, []);
 
@@ -161,6 +188,17 @@ const List: React.FC = () => {
 			delimiter: ",",
 		};
 	}
+
+	data?.map((every: Stock) => {
+		if (
+			every.state === "working" &&
+			every.status === "in" &&
+			every.defect === "" &&
+			every.memoryType === ""
+		) {
+			console.log("blank sell info:", every);
+		}
+	});
 
 	return (
 		<Stack>
@@ -195,6 +233,18 @@ const List: React.FC = () => {
 								gradient={{ from: "indigo", to: "cyan" }}
 							>
 								Import Stocks from CSV file
+							</Button>
+						)}
+					</FileButton>
+					<FileButton onChange={onBtnUpdateCSV} accept=".csv">
+						{(props) => (
+							<Button
+								{...props}
+								leftIcon={<IconDatabaseImport size="1rem" />}
+								variant="gradient"
+								gradient={{ from: "indigo", to: "cyan" }}
+							>
+								Update Stocks from CSV file
 							</Button>
 						)}
 					</FileButton>

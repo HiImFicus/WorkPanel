@@ -323,6 +323,15 @@ const SellList = () => {
 												direction="row"
 											>
 												<Badge variant="filled">{part.partNumber}</Badge>
+												{part.standby ? (
+													<Badge color="green" variant="filled">
+														{`standby: ${part.standby}`}
+													</Badge>
+												) : (
+													<Badge color="pink" variant="filled">
+														{`standby: ${part.standby}`}
+													</Badge>
+												)}
 												<Badge color="cyan">{`total: ${part.GPU}`}</Badge>
 												<Badge color="orange">{`working: ${part.working}`}</Badge>
 												<Badge color="red">{`broken: ${part.broken}`}</Badge>
@@ -330,9 +339,6 @@ const SellList = () => {
 													color="grape"
 													variant="outline"
 												>{`inStock: ${part.inStock}`}</Badge>
-												<Badge color="green" variant="filled">
-													{`standby: ${part.standby}`}
-												</Badge>
 												<Badge color="dark">{`defect: ${part.defect}`}</Badge>
 												<Badge color="gray">{`out: ${part.out}`}</Badge>
 											</Flex>
@@ -441,19 +447,12 @@ const SellList = () => {
 			if (partNumber.standby) {
 				const stock = partNumber.stocks[0];
 				sellList.push({
-					Action: "Add",
+					Action: "ADD",
 					CustomLabel:
-						"GPU-" +
-						stock.partNumbers.split(",")[0] +
-						"_" +
-						(stock.silicon === "NVIDIA"
-							? stock.model.includes("Quadro")
-								? "G1"
-								: "G2"
-							: "G3"),
+						"GPU-" + stock.partNumbers.split(",")[0] + "_" + stock.location,
 					Category: 27386,
 					StoreCategory: 39280041014,
-					title: "",
+					title: stock.title,
 					Subtitle: "",
 					Relationship: "",
 					RelationshipDetails: "",
@@ -464,8 +463,8 @@ const SellList = () => {
 					ChipsetManufacturer: stock.silicon,
 					ChipsetGPUModel: stock.silicon + " " + stock.model,
 					MemorySize: stock.memory,
-					MemoryType: "",
-					CompatibleSlot: "",
+					MemoryType: stock.memoryType,
+					CompatibleSlot: stock.compatibleSlot,
 					Connectors: stock.ports.replaceAll(",", "; "),
 					PowerCableRequirement: "",
 					Features: "Multiple Monitor Support",
@@ -478,16 +477,24 @@ const SellList = () => {
 					ItemLength: "",
 					ItemWidth: "",
 					ManufacturerWarranty: "",
-					PicURL: "",
+					PicURL: stock.picUrl,
 					GalleryType: "",
 					Description: "",
 					Format: "FixedPrice",
 					Duration: "GTC",
-					StartPrice: "",
+					StartPrice: stock.price,
 					BuyItNowPrice: "",
 					Quantity: partNumber.standby,
 					PayPalAccepted: 1,
 				});
+
+				const firstProfile = stock.formFactor;
+				const differentProfiles = partNumber.stocks.filter(
+					(every: any) => every.formFactor !== firstProfile
+				);
+				if (differentProfiles.length > 0) {
+					console.log("different profiles:", differentProfiles);
+				}
 			}
 		});
 	});

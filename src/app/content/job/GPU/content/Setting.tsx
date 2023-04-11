@@ -51,7 +51,11 @@ const configListMap = [
 	{ table: "formFactor", label: "Form", hasDepend: false, span: 6 },
 	{ table: "makerBrand", label: "Brand", hasDepend: false, span: 6 },
 	{ table: "memorySize", label: "Memory", hasDepend: false, span: 6 },
+	{ table: "memoryType", label: "Memory Type", hasDepend: false, span: 6 },
 	{ table: "port", label: "Port", hasDepend: false, span: 6 },
+	{ table: "location", label: "Location", hasDepend: false, span: 6 },
+	{ table: "compatibleSlot", label: "C Slot", hasDepend: false, span: 6 },
+	{ table: "title", label: "Title", hasDepend: false, span: 6 },
 	{ table: "partNumber", label: "Part #", hasDepend: false, span: 6 },
 	{
 		table: "model",

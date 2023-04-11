@@ -11,12 +11,14 @@ import {
 	List,
 	MultiSelect,
 	Notification,
+	NumberInput,
 	rem,
 	SegmentedControl,
 	Select,
 	SimpleGrid,
 	Switch,
 	Text,
+	TextInput,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
@@ -24,7 +26,6 @@ import { randomId } from "@mantine/hooks";
 import { IconTrash } from "@tabler/icons-react";
 
 import {
-	Stock,
 	stockDefectMap,
 	stockSelfStateBad,
 	stockSelfStateGood,
@@ -84,6 +85,22 @@ function Add() {
 	const [partNumberData, setPartNumberData] = useState<
 		{ value: string; label: string }[]
 	>([]);
+
+	const [locationData, setLocationData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+
+	const [memoryTypeData, setMemoryTypeData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+
+	const [compatibleSlotData, setCompatibleSlotData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+	const [titleData, setTitleData] = useState<
+		{ value: string; label: string }[]
+	>([]);
+
 	const dataService = useContext(dataServiceContext);
 
 	const [notification, setNotification] = useState({
@@ -151,6 +168,18 @@ function Add() {
 				);
 			}
 		});
+		dataService?.getLocations().then((results) => {
+			setLocationData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getMemoryTypes().then((results) => {
+			setMemoryTypeData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getCompatibleSlots().then((results) => {
+			setCompatibleSlotData(getNameArrayFromObjectArray(results));
+		});
+		dataService?.getTitles().then((results) => {
+			setTitleData(getNameArrayFromObjectArray(results));
+		});
 		return () => {
 			setSiliconData([]);
 			setBrandData([]);
@@ -160,6 +189,10 @@ function Add() {
 			setPortData([]);
 			setPartNumberData([]);
 			setRecordData([]);
+			setLocationData([]);
+			setMemoryTypeData([]);
+			setCompatibleSlotData([]);
+			setTitleData([]);
 		};
 	}, []);
 
@@ -192,6 +225,8 @@ function Add() {
 			brand: "",
 			model: "",
 			memory: "",
+			memoryType: "",
+			compatibleSlot: "",
 			formFactor: "",
 			defect: [],
 			date: new Date(),
@@ -201,12 +236,18 @@ function Add() {
 				// { type: '', active: true, key: randomId() }
 			],
 			partNumbers: [],
+			title: "",
+			location: "",
+			picURL: "",
+			price: 0,
 		},
 		validate: {
 			silicon: isNotEmpty("required"),
 			brand: isNotEmpty("required"),
 			model: isNotEmpty("required"),
 			memory: isNotEmpty("required"),
+			memoryType: isNotEmpty("required"),
+			compatibleSlot: isNotEmpty("required"),
 			formFactor: isNotEmpty("required"),
 			date: isNotEmpty("required"),
 			state: isNotEmpty("required"),
@@ -323,7 +364,7 @@ function Add() {
 		return dataService?.getLastThreeStocks();
 	}, []);
 
-	const lastThreeStocks = lastThreeData?.map((stock: Stock, index) => (
+	const lastThreeStocks = lastThreeData?.map((stock: any, index) => (
 		<List.Item key={stock.id}>
 			{stock.id}-{stock.brand}-{stock.model}-{stock.memory}-{stock.formFactor}-
 			{stock.ports}-{stock.partNumbers}
@@ -385,7 +426,7 @@ function Add() {
 						onCreate={createNewModel}
 					/>
 				</Grid.Col>
-				<Grid.Col span={6}>
+				<Grid.Col span={3}>
 					<Select
 						label="MEMORY"
 						placeholder="Pick one"
@@ -395,7 +436,27 @@ function Add() {
 						searchable
 					/>
 				</Grid.Col>
-				<Grid.Col span={6}>
+				<Grid.Col span={3}>
+					<Select
+						label="MEMORY TYPE"
+						placeholder="Pick one"
+						data={memoryTypeData}
+						{...form.getInputProps("memoryType")}
+						clearable
+						searchable
+					/>
+				</Grid.Col>
+				<Grid.Col span={3}>
+					<Select
+						label="COMPATIBLE SLOT"
+						placeholder="Pick one"
+						data={compatibleSlotData}
+						{...form.getInputProps("compatibleSlot")}
+						clearable
+						searchable
+					/>
+				</Grid.Col>
+				<Grid.Col span={3}>
 					<Select
 						label="FORM FACTOR"
 						placeholder="Pick one"
@@ -472,7 +533,7 @@ function Add() {
 					</SimpleGrid>
 				</Grid.Col>
 
-				<Grid.Col span={12}>
+				<Grid.Col span={6}>
 					<MultiSelect
 						label="PART #"
 						data={partNumberData}
@@ -485,7 +546,7 @@ function Add() {
 					/>
 				</Grid.Col>
 
-				<Grid.Col span={12}>
+				<Grid.Col span={6}>
 					<MultiSelect
 						label="DEFECT"
 						data={defectData}
@@ -502,7 +563,42 @@ function Add() {
 					/>
 				</Grid.Col>
 
-				<Grid.Col span={4}>
+				<Grid.Col span={3}>
+					<Select
+						label="TITLE"
+						placeholder="Pick one"
+						data={titleData}
+						{...form.getInputProps("title")}
+						clearable
+						searchable
+					/>
+				</Grid.Col>
+				<Grid.Col span={3}>
+					<Select
+						label="Location"
+						placeholder="Pick one"
+						data={locationData}
+						{...form.getInputProps("location")}
+						clearable
+						searchable
+					/>
+				</Grid.Col>
+				<Grid.Col span={3}>
+					<TextInput
+						label="PIC URL"
+						placeholder="Pick one"
+						{...form.getInputProps("picURL")}
+					/>
+				</Grid.Col>
+				<Grid.Col span={3}>
+					<NumberInput
+						label="PRICE"
+						placeholder="Pick one"
+						{...form.getInputProps("price")}
+					/>
+				</Grid.Col>
+
+				<Grid.Col span={12}>
 					<Group position="center" mt="xl">
 						<Button type="submit" size="md">
 							Sumbit

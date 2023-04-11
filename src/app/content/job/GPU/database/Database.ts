@@ -14,6 +14,8 @@ const stockFieldsFromFile = [
 	"brand",
 	"model",
 	"memory",
+	"memoryType",
+	"compatibleSlot",
 	"formFactor",
 	"ports",
 	"partNumbers",
@@ -21,12 +23,18 @@ const stockFieldsFromFile = [
 	"state",
 	"status",
 	"defect",
+	"title",
+	"location",
+	"picUrl",
+	"price",
 ];
 const stockFieldsRunTime = [
 	"silicon",
 	"brand",
 	"model",
 	"memory",
+	"memoryType",
+	"compatibleSlot",
 	"formFactor",
 	"ports",
 	"partNumbers",
@@ -34,6 +42,10 @@ const stockFieldsRunTime = [
 	"state",
 	"status",
 	"defect",
+	"title",
+	"location",
+	"picUrl",
+	"price",
 ];
 const recordFields = [
 	"silicon",
@@ -87,6 +99,27 @@ class Database {
 			],
 		},
 		{
+			name: "location",
+			fields: ["++id", "&name"],
+		},
+		{
+			name: "memoryType",
+			fields: ["++id", "&name"],
+		},
+		{
+			name: "compatibleSlot",
+			fields: ["++id", "&name"],
+		},
+		{
+			name: "title",
+			fields: ["++id", "&name"],
+		},
+		// todo sell list
+		// {
+		// 	name: "sellList",
+		// 	fields: ["++id", "partNumber"],
+		// },
+		{
 			name: "stock",
 			fields: [
 				"++id",
@@ -94,6 +127,8 @@ class Database {
 				"brand",
 				"model",
 				"memory",
+				"memoryType",
+				"compatibleSlot",
 				"formFactor",
 				"ports",
 				"partNumbers",
@@ -101,17 +136,20 @@ class Database {
 				"state",
 				"status",
 				"defect",
+				"title",
+				"location",
+				"picUrl",
+				"price",
 			],
 		},
 	];
-	version: number = 1;
 	instance: Dexie;
 
 	constructor() {
 		this.instance = new Dexie(this.name);
 		const scheme = Database.getScheme();
 		//todo check indexDB.
-		this.instance.version(this.version).stores(scheme);
+		this.instance.version(1).stores(scheme);
 	}
 
 	static getScheme(): databaseScheme {
@@ -143,6 +181,12 @@ class Database {
 				).toLowerCase();
 			} else if (field === "id") {
 				newStock[field] = Number(data[field]);
+			} else if (!data[field]) {
+				if (field === "price") {
+					newStock[field] = 0;
+				} else {
+					newStock[field] = "";
+				}
 			} else {
 				newStock[field] = data[field];
 			}
@@ -231,6 +275,22 @@ class Database {
 		return this.instance.table("stock");
 	}
 
+	getLocationTable(): Table {
+		return this.instance.table("location");
+	}
+
+	getMemoryTypeTable(): Table {
+		return this.instance.table("memoryType");
+	}
+
+	getCompatibleSlotTable(): Table {
+		return this.instance.table("compatibleSlot");
+	}
+
+	getTitleTable(): Table {
+		return this.instance.table("title");
+	}
+
 	parsePortsObjectToString(portsObject: any[]) {
 		let ports: any = {};
 		portsObject.map((port) => {
@@ -305,6 +365,8 @@ export type Stock = {
 	brand: string;
 	model: string;
 	memory: string;
+	memoryType: string;
+	compatibleSlot: string;
 	formFactor: string;
 	ports: string;
 	partNumbers: string;
@@ -312,6 +374,10 @@ export type Stock = {
 	state: string;
 	status: string;
 	defect: string;
+	title: string;
+	location: string;
+	picUrl: string;
+	price: string;
 };
 
 export const stockSelfStateGood = "working";

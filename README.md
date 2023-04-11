@@ -10,4 +10,6 @@ sell list table pagination
 
 generate sell list
 
-add field location memory type.
+add field location memory type. sell list field.
+
+speard same partNUmber different profile.
