@@ -457,10 +457,14 @@ const SellList = () => {
 				if (lpStocks.length > 0) {
 					const lpStock = lpStocks[0];
 					let lpPartNum = lpStock.partNumbers.replaceAll(",", " ");
-					if (lpPartNum.length > 15) {
-						lpPartNum = lpPartNum.slice(0, 10) + "..."
+					let lpTitle = `${lpStock.brand} ${lpStock.model}|${lpPartNum}|${lpStock.memory} VideoCard|LP|${lpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|TESTED`
+
+					if (lpTitle.length > 80) {
+						lpTitle = lpTitle.replaceAll("VideoCard", "GPU");
 					}
-					let lpTitle = `${lpStock.brand} ${lpStock.model}|${lpPartNum}|${lpStock.memory} VideoCard|LP|${lpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|Tested`
+					if (lpTitle.length > 80) {
+						lpTitle = lpTitle.replaceAll("TESTED", "");
+					}
 
 					if (lpTitle.length > 80) {
 						console.log(lpTitle)
@@ -512,11 +516,15 @@ const SellList = () => {
 				if (hpStocks.length > 0) {
 					const hpStock = hpStocks[0];
 					let hpPartNum = hpStock.partNumbers.replaceAll(",", " ");
-					if (hpPartNum.length > 15) {
-						hpPartNum = hpPartNum.slice(0, 10) + "..."
+					let hpTitle = `${hpStock.brand} ${hpStock.model}|${hpPartNum}|${hpStock.memory} VideoCard|HP|${hpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|TESTED`
+
+					if (hpTitle.length > 80) {
+						hpTitle = hpTitle.replaceAll("VideoCard", "GPU");
 					}
-					
-					let hpTitle = `${hpStock.brand} ${hpStock.model}|${hpPartNum}|${hpStock.memory} VideoCard|HP|${hpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|Tested`
+
+					if (hpTitle.length > 80) {
+						hpTitle = hpTitle.replaceAll("TESTED", "");
+					}
 
 					if (hpTitle.length > 80) {
 						console.log(hpTitle)
