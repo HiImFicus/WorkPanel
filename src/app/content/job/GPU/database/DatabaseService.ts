@@ -241,72 +241,6 @@ class DatabaseServie {
 		return this.addStock(newStock);
 	}
 
-	async bulkUpdateStockFromImport(data: any[]) {
-		const listData = data
-			.filter(
-				(every) =>
-					every["*C:MPN"] &&
-					every["CustomLabel"] &&
-					every["*Title"] &&
-					every["*C:Memory Type"] &&
-					every["C:Compatible Slot"] &&
-					every["PicURL"] &&
-					every["*StartPrice"]
-			)
-			.map((every) => {
-				return {
-					partNumber: every["*C:MPN"],
-					location: every["CustomLabel"].split("_")[1],
-					title: every["*Title"],
-					memoryType: every["*C:Memory Type"],
-					compatibleSlot: every["C:Compatible Slot"],
-					picUrl: every["PicURL"],
-					price: every["*StartPrice"],
-				};
-			});
-
-		// console.log(listData);
-		listData.map((every) => {
-			this.database
-				.getCompatibleSlotTable()
-				.add({ name: every["compatibleSlot"] })
-				.catch((reason) =>
-					this.hanldeDuplicateDataIntertError(reason, "compatibleSlot")
-				);
-			this.database
-				.getMemoryTypeTable()
-				.add({ name: every["memoryType"] })
-				.catch((reason) =>
-					this.hanldeDuplicateDataIntertError(reason, "memory type")
-				);
-			this.database
-				.getTitleTable()
-				.add({ name: every["title"] })
-				.catch((reason) =>
-					this.hanldeDuplicateDataIntertError(reason, "title")
-				);
-			this.database
-				.getLocationTable()
-				.add({ name: every["location"] })
-				.catch((reason) =>
-					this.hanldeDuplicateDataIntertError(reason, "location")
-				);
-
-			this.database
-				.getStockTable()
-				.where("partNumbers")
-				.startsWithIgnoreCase(every["partNumber"])
-				.modify({
-					memoryType: every["memoryType"],
-					compatibleSlot: every["compatibleSlot"],
-					location: every["location"],
-					title: every["title"],
-					picUrl: every["picUrl"],
-					price: Number(every["price"]),
-				});
-		});
-	}
-
 	async bulkAddStockFromImport(stocksData: any[]) {
 		const stocks = stocksData.map((every) => {
 			const stock = this.database.createStockFromFile(every);
@@ -370,15 +304,6 @@ class DatabaseServie {
 				.add({ name: stock.compatibleSlot })
 				.catch((reason) =>
 					this.hanldeDuplicateDataIntertError(reason, "compatibleSlot")
-				);
-		}
-
-		if (stock.title) {
-			this.database
-				.getTitleTable()
-				.add({ name: stock.title })
-				.catch((reason) =>
-					this.hanldeDuplicateDataIntertError(reason, "title")
 				);
 		}
 
@@ -476,10 +401,6 @@ class DatabaseServie {
 
 	async getCompatibleSlots() {
 		return await this.database.getCompatibleSlotTable().toArray();
-	}
-
-	async getTitles() {
-		return await this.database.getTitleTable().toArray();
 	}
 }
 

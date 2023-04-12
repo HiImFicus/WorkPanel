@@ -87,7 +87,6 @@ export default function Update() {
 			status: "",
 			ports: [],
 			partNumbers: [],
-			title: "",
 			location: "",
 			picUrl: "",
 			price: 0,
@@ -201,9 +200,6 @@ export default function Update() {
 	const [compatibleSlotData, setCompatibleSlotData] = useState<
 		{ value: string; label: string }[]
 	>([]);
-	const [titleData, setTitleData] = useState<
-		{ value: string; label: string }[]
-	>([]);
 
 	const [notification, setNotification] = useState({
 		open: false,
@@ -263,9 +259,6 @@ export default function Update() {
 		dataService?.getCompatibleSlots().then((results) => {
 			setCompatibleSlotData(getNameArrayFromObjectArray(results));
 		});
-		dataService?.getTitles().then((results) => {
-			setTitleData(getNameArrayFromObjectArray(results));
-		});
 		return () => {
 			setSiliconData([]);
 			setBrandData([]);
@@ -277,7 +270,6 @@ export default function Update() {
 			setLocationData([]);
 			setMemoryTypeData([]);
 			setCompatibleSlotData([]);
-			setTitleData([]);
 		};
 	}, []);
 
@@ -542,17 +534,6 @@ export default function Update() {
 							{...form.getInputProps("defect")}
 						/>
 					</Grid.Col>
-
-					<Grid.Col span={3}>
-						<Select
-							label="TITLE"
-							placeholder="Pick one"
-							data={titleData}
-							{...form.getInputProps("title")}
-							clearable
-							searchable
-						/>
-					</Grid.Col>
 					<Grid.Col span={3}>
 						<Select
 							label="Location"
@@ -563,7 +544,7 @@ export default function Update() {
 							searchable
 						/>
 					</Grid.Col>
-					<Grid.Col span={3}>
+					<Grid.Col span={6}>
 						<TextInput
 							label="PIC URL"
 							placeholder="Pick one"

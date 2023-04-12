@@ -112,11 +112,11 @@ function Overview() {
 	const [uniqueModelStockReportsColumns, setUniqueModelStockReportsColumns] =
 		useState([
 			{ field: "model", filter: true },
+			{ field: "standby", filter: true },
 			{ field: "total", filter: true },
 			{ field: "working", filter: true },
 			{ field: "broken", filter: true },
 			{ field: "inStock", filter: true },
-			{ field: "standby", filter: true },
 			{ field: "defect", filter: true },
 			{ field: "out", filter: true },
 		]);

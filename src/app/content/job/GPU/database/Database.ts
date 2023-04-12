@@ -23,7 +23,6 @@ const stockFieldsFromFile = [
 	"state",
 	"status",
 	"defect",
-	"title",
 	"location",
 	"picUrl",
 	"price",
@@ -42,7 +41,6 @@ const stockFieldsRunTime = [
 	"state",
 	"status",
 	"defect",
-	"title",
 	"location",
 	"picUrl",
 	"price",
@@ -52,6 +50,8 @@ const recordFields = [
 	"brand",
 	"model",
 	"memory",
+	"memoryType",
+	"compatibleSlot",
 	"formFactor",
 	"ports",
 	"partNumbers",
@@ -95,7 +95,7 @@ class Database {
 			name: "record",
 			fields: [
 				"++id",
-				"&[silicon+brand+model+memory+formFactor+ports+partNumbers]",
+				"&[silicon+brand+model+memory+memoryType+compatibleSlot+formFactor+ports+partNumbers]",
 			],
 		},
 		{
@@ -108,10 +108,6 @@ class Database {
 		},
 		{
 			name: "compatibleSlot",
-			fields: ["++id", "&name"],
-		},
-		{
-			name: "title",
 			fields: ["++id", "&name"],
 		},
 		// todo sell list
@@ -136,7 +132,6 @@ class Database {
 				"state",
 				"status",
 				"defect",
-				"title",
 				"location",
 				"picUrl",
 				"price",
@@ -287,10 +282,6 @@ class Database {
 		return this.instance.table("compatibleSlot");
 	}
 
-	getTitleTable(): Table {
-		return this.instance.table("title");
-	}
-
 	parsePortsObjectToString(portsObject: any[]) {
 		let ports: any = {};
 		portsObject.map((port) => {
@@ -374,7 +365,6 @@ export type Stock = {
 	state: string;
 	status: string;
 	defect: string;
-	title: string;
 	location: string;
 	picUrl: string;
 	price: string;

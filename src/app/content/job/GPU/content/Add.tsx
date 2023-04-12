@@ -97,9 +97,6 @@ function Add() {
 	const [compatibleSlotData, setCompatibleSlotData] = useState<
 		{ value: string; label: string }[]
 	>([]);
-	const [titleData, setTitleData] = useState<
-		{ value: string; label: string }[]
-	>([]);
 
 	const dataService = useContext(dataServiceContext);
 
@@ -160,8 +157,8 @@ function Add() {
 				setRecordData(
 					records.map((record) => {
 						return {
-							value: `${record.silicon}%${record.brand}%${record.model}%${record.memory}%${record.formFactor}%${record.ports}%${record.partNumbers}`,
-							label: `${record.brand}-${record.model}-${record.memory}-${record.formFactor}-${record.ports}-${record.partNumbers}`,
+							value: `${record.silicon}%${record.brand}%${record.model}%${record.memory}%${record.memoryType}%${record.compatibleSlot}%${record.formFactor}%${record.ports}%${record.partNumbers}`,
+							label: `${record.brand}-${record.model}-${record.memory}-${record.memoryType}-${record.compatibleSlot}-${record.formFactor}-${record.ports}-${record.partNumbers}`,
 							group: record.silicon,
 						};
 					})
@@ -177,9 +174,6 @@ function Add() {
 		dataService?.getCompatibleSlots().then((results) => {
 			setCompatibleSlotData(getNameArrayFromObjectArray(results));
 		});
-		dataService?.getTitles().then((results) => {
-			setTitleData(getNameArrayFromObjectArray(results));
-		});
 		return () => {
 			setSiliconData([]);
 			setBrandData([]);
@@ -192,7 +186,6 @@ function Add() {
 			setLocationData([]);
 			setMemoryTypeData([]);
 			setCompatibleSlotData([]);
-			setTitleData([]);
 		};
 	}, []);
 
@@ -236,7 +229,6 @@ function Add() {
 				// { type: '', active: true, key: randomId() }
 			],
 			partNumbers: [],
-			title: "",
 			location: "",
 			picUrl: "",
 			price: 0,
@@ -319,15 +311,17 @@ function Add() {
 			return;
 		}
 		const template = templateString.split("%");
-		if (template.length === 7) {
+		if (template.length === 9) {
 			form.setValues({
 				silicon: template[0],
 				brand: template[1],
 				model: template[2],
 				memory: template[3],
-				formFactor: template[4],
-				ports: parsePortsStringToObjectArray(template[5]),
-				partNumbers: template[6].split(",").map((item) => item.trim()),
+				memoryType: template[4],
+				compatibleSlot: template[5],
+				formFactor: template[6],
+				ports: parsePortsStringToObjectArray(template[7]),
+				partNumbers: template[8].split(",").map((item) => item.trim()),
 			});
 		} else {
 			form.reset();
@@ -366,7 +360,7 @@ function Add() {
 
 	const lastThreeStocks = lastThreeData?.map((stock: any, index) => (
 		<List.Item key={stock.id}>
-			{stock.id}-{stock.brand}-{stock.model}-{stock.memory}-{stock.formFactor}-
+			{stock.id}-{stock.brand}-{stock.model}-{stock.memory}-{stock.memoryType}-{stock.compatibleSlot}-{stock.formFactor}-
 			{stock.ports}-{stock.partNumbers}
 		</List.Item>
 	));
@@ -562,17 +556,6 @@ function Add() {
 						{...form.getInputProps("defect")}
 					/>
 				</Grid.Col>
-
-				<Grid.Col span={3}>
-					<Select
-						label="TITLE"
-						placeholder="Pick one"
-						data={titleData}
-						{...form.getInputProps("title")}
-						clearable
-						searchable
-					/>
-				</Grid.Col>
 				<Grid.Col span={3}>
 					<Select
 						label="Location"
@@ -583,7 +566,7 @@ function Add() {
 						searchable
 					/>
 				</Grid.Col>
-				<Grid.Col span={3}>
+				<Grid.Col span={6}>
 					<TextInput
 						label="PIC URL"
 						placeholder="Pick one"

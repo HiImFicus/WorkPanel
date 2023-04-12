@@ -13,7 +13,7 @@ import {
 	rem,
 	Table,
 } from "@mantine/core";
-import { IconFileExport } from "@tabler/icons-react";
+import { IconBrandGoogle, IconFileExport } from "@tabler/icons-react";
 
 import { getCurrentDate } from "../../../../common/Helps";
 import { Stock } from "../database/Database";
@@ -308,7 +308,7 @@ const SellList = () => {
 			{element.partNumbers && (
 				<tr style={{ textAlign: "center" }}>
 					<td colSpan={9}>
-						<Accordion defaultValue={element.partNumbers[0].partNumber}>
+						<Accordion multiple defaultValue={element.partNumbers[0].partNumber}>
 							{element.partNumbers.map((part: any) => {
 								return (
 									<Accordion.Item
@@ -429,10 +429,12 @@ const SellList = () => {
 		total: 0,
 		standbyForSell: 0,
 		standbyPartNumberCount: 0,
+		standbyDifferenceProfileCount: 0,
 		defect: 0,
 		out: 0,
 		broken: 0,
 	};
+	const differentProfileStocks: any[] = [];
 	const sellList: eBayList[] = [];
 	stocks?.map((item: any) => {
 		report.partNumberCount += item.partNumbersCount;
@@ -457,7 +459,7 @@ const SellList = () => {
 				if (lpStocks.length > 0) {
 					const lpStock = lpStocks[0];
 					let lpPartNum = lpStock.partNumbers.replaceAll(",", " ");
-					let lpTitle = `${lpStock.brand} ${lpStock.model}|${lpPartNum}|${lpStock.memory} VideoCard|LP|${lpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|TESTED`
+					let lpTitle = `${lpStock.brand} ${lpStock.model}|${lpPartNum}|${lpStock.memory} VideoCard|LP|${lpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}| TESTED`
 
 					if (lpTitle.length > 80) {
 						lpTitle = lpTitle.replaceAll("VideoCard", "GPU");
@@ -516,7 +518,7 @@ const SellList = () => {
 				if (hpStocks.length > 0) {
 					const hpStock = hpStocks[0];
 					let hpPartNum = hpStock.partNumbers.replaceAll(",", " ");
-					let hpTitle = `${hpStock.brand} ${hpStock.model}|${hpPartNum}|${hpStock.memory} VideoCard|HP|${hpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}|TESTED`
+					let hpTitle = `${hpStock.brand} ${hpStock.model}|${hpPartNum}|${hpStock.memory} VideoCard|HP|${hpStock.ports.replace(/[0-9]/g, "").replaceAll("x", "").replaceAll(" ", "").replace("DMS-", "DMS-59")}| TESTED`
 
 					if (hpTitle.length > 80) {
 						hpTitle = hpTitle.replaceAll("VideoCard", "GPU");
@@ -577,16 +579,21 @@ const SellList = () => {
 				const stock = partNumber.stocks[0];
 				const firstProfile = stock.formFactor;
 				const differentProfiles = partNumber.stocks.filter(
-					(every: any) => every.formFactor !== firstProfile
+					(every: any) => every.formFactor !== firstProfile && every.status === "in" && every.state === "working" && every.defect === ""
 				);
 				if (differentProfiles.length > 0) {
-					console.log("different profiles:", differentProfiles);
+					report.standbyDifferenceProfileCount++;
+					differentProfileStocks.push(differentProfiles)
 				}
 			}
 		});
 	});
 
-	console.log(report);
+	function getReport(){
+		console.log("report", report);
+		console.log("differentProfiles", differentProfileStocks);
+		console.log("sellList", sellList);
+	}
 
 	function getExportMetaData() {
 		return {
@@ -609,6 +616,15 @@ const SellList = () => {
 				>
 					Export Sell List
 				</Button>
+				<Button
+					leftIcon={<IconBrandGoogle size="1rem" />}
+					variant="gradient"
+					gradient={{ from: "red", to: "indigo" }}
+					disabled={disableExport}
+					onClick={getReport}
+				>
+					report to console
+			</Button>
 			</Button.Group>
 			<Table striped highlightOnHover withColumnBorders>
 				<thead className={classes.header}>
