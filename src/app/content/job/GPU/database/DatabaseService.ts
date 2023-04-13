@@ -108,18 +108,6 @@ class DatabaseServie {
 			.first();
 	}
 
-	parseModelFromString(string: string) {
-		const parseArray = string.split(":");
-		if (parseArray.length === 2) {
-			const modelName = parseArray[1].trim();
-			const silicon = parseArray[0].trim();
-
-			return { name: modelName, silicon: silicon };
-		}
-
-		return null;
-	}
-
 	//* memorySize
 	async addMemorySize(memorySize: MemorySize) {
 		return this.database.getMemorySizeTable().add(memorySize);

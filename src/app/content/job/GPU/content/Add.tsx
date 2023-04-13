@@ -12,6 +12,7 @@ import {
 	MultiSelect,
 	Notification,
 	NumberInput,
+	Popover,
 	rem,
 	SegmentedControl,
 	Select,
@@ -19,11 +20,12 @@ import {
 	Switch,
 	Text,
 	TextInput,
+	Image
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { randomId } from "@mantine/hooks";
-import { IconTrash } from "@tabler/icons-react";
+import { randomId, useDisclosure } from "@mantine/hooks";
+import { IconPhotoSearch, IconTrash } from "@tabler/icons-react";
 
 import {
 	stockDefectMap,
@@ -97,6 +99,9 @@ function Add() {
 	const [compatibleSlotData, setCompatibleSlotData] = useState<
 		{ value: string; label: string }[]
 	>([]);
+
+	const [imgOpened, { close, open }] = useDisclosure(false);
+	const [imgUrl, setImgUrl] = useState("")
 
 	const dataService = useContext(dataServiceContext);
 
@@ -198,14 +203,19 @@ function Add() {
 	}
 
 	function createNewModel(newModel: string) {
-		const model = dataService?.parseModelFromString(newModel);
-		if (model) {
+		const silicon = form.values.silicon;
+		if (!silicon) {
+			form.setFieldError("silicon", "Silion can not be blank.");
+			return
+		}
+
+		if (newModel) {
 			//upate to db
-			dataService?.addModel(model);
+			dataService?.addModel({ name: newModel, silicon: silicon });
 			const item = {
-				value: model.name,
-				label: model.name,
-				group: model.silicon,
+				value: newModel,
+				label: newModel,
+				group: silicon,
 			};
 			setModelData((current) => [...current, item]);
 			return item;
@@ -415,7 +425,7 @@ function Add() {
 						searchable
 						creatable
 						getCreateLabel={(query) =>
-							`+ Create ${query}, Format: Silicon: Model Code`
+							`+ Create ${query}, Format: Model Code`
 						}
 						onCreate={createNewModel}
 					/>
@@ -571,12 +581,32 @@ function Add() {
 						label="PIC URL"
 						placeholder="Pick one"
 						{...form.getInputProps("picUrl")}
+						onChange={(event) => {
+							setImgUrl(event.currentTarget.value);
+							form.setFieldValue('picUrl', event.currentTarget.value)
+						}}
+						rightSection={
+							<Popover position="bottom" withArrow shadow="md" opened={imgOpened}>
+								<Popover.Target>
+								<div onMouseEnter={open} onMouseLeave={close}>
+									<IconPhotoSearch size="1rem" style={{ display: 'block', opacity: 0.5 }} />
+								</div>
+								</Popover.Target>
+								<Popover.Dropdown>
+								<Image
+									radius="md"
+									fit="contain"
+									width={500} height={500}
+									src={imgUrl}
+      							/>
+								</Popover.Dropdown>
+						  </Popover>
+						  }
 					/>
 				</Grid.Col>
 				<Grid.Col span={3}>
 					<NumberInput
 						label="PRICE"
-						placeholder="Pick one"
 						step={0.01}
 						precision={2}
 						{...form.getInputProps("price")}

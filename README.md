@@ -12,3 +12,10 @@ sell list: CustomLabel(partNumber%L/HP), picUrl, price.
 MODEL LIST
 
 ORIGINAL LIST
+
+price input spread
+
+img show
+
+when click broken 
+location trash
