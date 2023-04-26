@@ -354,7 +354,11 @@ export default function Update() {
 		}
 
 		if (form.isValid()) {
-			dataService?.updateStock(stock?.id, form.values).then((updated) => {
+			const newData = {...form.values}
+			if (form.values.location === null) {
+				newData.location = ""	
+			}
+			dataService?.updateStock(stock?.id, newData).then((updated) => {
 				if (updated) {
 					handleNotification(
 						`${form.values.silicon}: ${form.values.model}, saved.`,

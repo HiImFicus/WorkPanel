@@ -55,7 +55,7 @@ class DatabaseServie {
 	}
 
 	async getSilicons() {
-		return await this.database.getSilisonTable().toArray();
+		return await this.database.getSilisonTable().orderBy('name').toArray();
 	}
 
 	//* brand
@@ -76,7 +76,7 @@ class DatabaseServie {
 	}
 
 	async getBrands() {
-		return await this.database.getMakerBrandTable().toArray();
+		return await this.database.getMakerBrandTable().orderBy('name').toArray();
 	}
 
 	//* model
@@ -97,7 +97,7 @@ class DatabaseServie {
 	}
 
 	async getModels() {
-		return await this.database.getModelTable().toArray();
+		return await this.database.getModelTable().orderBy('name').toArray();
 	}
 
 	async getModelByName(modelName: string): Promise<Model> {
@@ -126,7 +126,7 @@ class DatabaseServie {
 	}
 
 	async getMemorySizes() {
-		return await this.database.getMemorySizeTable().toArray();
+		return await this.database.getMemorySizeTable().orderBy('name').toArray();
 	}
 
 	//* FormFactor
@@ -147,7 +147,7 @@ class DatabaseServie {
 	}
 
 	async getFormFactors() {
-		return await this.database.getFormFactorTable().toArray();
+		return await this.database.getFormFactorTable().orderBy('name').toArray();
 	}
 
 	//* Port
@@ -168,7 +168,7 @@ class DatabaseServie {
 	}
 
 	async getPorts() {
-		return await this.database.getPortTable().toArray();
+		return await this.database.getPortTable().orderBy('name').toArray();
 	}
 
 	//* PartNumber
@@ -189,7 +189,7 @@ class DatabaseServie {
 	}
 
 	async getPartNumbers() {
-		return await this.database.getPartNumberTable().toArray();
+		return await this.database.getPartNumberTable().orderBy('name').toArray();
 	}
 
 	//* Record
@@ -384,11 +384,11 @@ class DatabaseServie {
 	}
 
 	async getMemoryTypes() {
-		return await this.database.getMemoryTypeTable().toArray();
+		return await this.database.getMemoryTypeTable().orderBy('name').toArray();
 	}
 
 	async getCompatibleSlots() {
-		return await this.database.getCompatibleSlotTable().toArray();
+		return await this.database.getCompatibleSlotTable().orderBy('name').toArray();
 	}
 }
 

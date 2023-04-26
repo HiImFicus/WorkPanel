@@ -23,7 +23,7 @@ import {
 	Image
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
-import { isNotEmpty, useForm } from "@mantine/form";
+import { isNotEmpty, isInRange, useForm } from "@mantine/form";
 import { randomId, useDisclosure } from "@mantine/hooks";
 import { IconPhotoSearch, IconTrash } from "@tabler/icons-react";
 
@@ -241,7 +241,8 @@ function Add() {
 			partNumbers: [],
 			location: "",
 			picUrl: "",
-			price: 0,
+			priceInt: 0,
+			priceDecimal: 0,
 		},
 		validate: {
 			silicon: isNotEmpty("required"),
@@ -254,6 +255,7 @@ function Add() {
 			date: isNotEmpty("required"),
 			state: isNotEmpty("required"),
 			status: isNotEmpty("required"),
+			priceDecimal: isInRange({ min: 0, max: 99 }),
 		},
 	});
 
@@ -352,9 +354,17 @@ function Add() {
 			return;
 		}
 
+
 		if (form.isValid()) {
+			const newData = {
+				...form.values,
+				price: Number(`${form.values.priceInt}.${form.values.priceDecimal}`)
+			}
+			if (form.values.location === null) {
+				newData.location = ""	
+			}
 			dataService
-				?.stockSaveFromAdd(form.values)
+				?.stockSaveFromAdd(newData)
 				.then((newId) =>
 					handleNotification(
 						`${form.values.silicon}: ${form.values.model}, saved.`,
@@ -576,7 +586,7 @@ function Add() {
 						searchable
 					/>
 				</Grid.Col>
-				<Grid.Col span={6}>
+				<Grid.Col span={5}>
 					<TextInput
 						label="PIC URL"
 						placeholder="Pick one"
@@ -604,12 +614,19 @@ function Add() {
 						  }
 					/>
 				</Grid.Col>
-				<Grid.Col span={3}>
+				<Grid.Col span={2}>
 					<NumberInput
-						label="PRICE"
-						step={0.01}
-						precision={2}
-						{...form.getInputProps("price")}
+						label={`PRICE INT`}
+						min={0}
+						{...form.getInputProps("priceInt")}
+					/>
+				</Grid.Col>
+				<Grid.Col span={2}>
+					<NumberInput
+						label="PRICE DECIMAL"
+						max={99}
+						min={0}
+						{...form.getInputProps("priceDecimal")}
 					/>
 				</Grid.Col>
 

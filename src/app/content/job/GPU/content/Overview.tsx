@@ -70,6 +70,13 @@ function Overview() {
 	const uniqueModelStockReports = uniqueModel?.map((model) => {
 		return {
 			model: model,
+			standby: stocks?.filter(
+				(stock) =>
+					stock.model === model &&
+					stock.status === "in" &&
+					stock.state === stockSelfStateGood &&
+					stock.defect === ""
+			).length,
 			total: stocks?.filter((stock) => stock.model === model).length,
 			working: stocks?.filter(
 				(stock) => stock.model === model && stock.state === stockSelfStateGood
@@ -82,13 +89,6 @@ function Overview() {
 					stock.model === model &&
 					stock.status === "in" &&
 					stock.state === stockSelfStateGood
-			).length,
-			standby: stocks?.filter(
-				(stock) =>
-					stock.model === model &&
-					stock.status === "in" &&
-					stock.state === stockSelfStateGood &&
-					stock.defect === ""
 			).length,
 			defect: stocks?.filter(
 				(stock) => stock.model === model && stock.defect !== ""
