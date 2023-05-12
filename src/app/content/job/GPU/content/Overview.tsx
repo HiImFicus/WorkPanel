@@ -125,6 +125,13 @@ function Overview() {
 	const uniqueDate = allDate?.filter(
 		(item, index) => allDate.indexOf(item) === index
 	);
+	
+	uniqueDate?.sort((a, b) => {
+		const dateA = new Date(a).getTime();
+		const dateB = new Date(b).getTime();
+		return dateB- dateA;
+	});
+
 	const dateReport = uniqueDate?.map((date) => {
 		return {
 			date: date,
@@ -163,8 +170,8 @@ function Overview() {
 		const spreadSymbol = "\r\n\r\n-,-,-,-,-,-,-,-,-,-,-,-\r\n\r\n";
 		const data = [
 			Papa.unparse(totalReports),
-			spreadSymbol,
-			Papa.unparse(uniqueModelStockReports ?? []),
+			// spreadSymbol,
+			// Papa.unparse(uniqueModelStockReports ?? []),
 			spreadSymbol,
 			Papa.unparse(dateReport ?? []),
 			spreadSymbol,

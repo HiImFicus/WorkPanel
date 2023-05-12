@@ -382,4 +382,5 @@ export const stockDefectMap = [
 	{ value: "noisy fan", label: "Noisy Fan" },
 	{ value: "no profile", label: "No Profile" },
 	{ value: "dead pixels", label: "Dead Pixels" },
+	{ value: "bad cover", label: "Bad Cover" },
 ];
